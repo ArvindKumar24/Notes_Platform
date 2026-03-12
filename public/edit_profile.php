@@ -147,7 +147,7 @@ include("includes/header.php");
 <div class="row justify-content-center">
     <div class="col-lg-6">
         <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header" style="background: #14B8A6; color: white;">
                 <i class="bi bi-person-check me-1"></i>Edit Profile
             </div>
             <div class="card-body p-4">
@@ -183,7 +183,7 @@ include("includes/header.php");
                                 $currentProfilePic = !empty($user['profile_picture']) ? "../".$user['profile_picture'] : null;
 
                                 if ($currentProfilePic && file_exists($currentProfilePic)) {
-                                    echo '<img src="'.htmlspecialchars($currentProfilePic).'" class="rounded-circle" style="width:150px;height:150px;object-fit:cover;border:3px solid #007bff;">';
+                                    echo '<img src="'.htmlspecialchars($currentProfilePic).'" class="rounded-circle" style="width:150px;height:150px;object-fit:cover;border:3px solid #14B8A6;">';
                                 } else {
                                     echo '<div class="rounded-circle d-inline-flex align-items-center justify-content-center" 
                                         style="width:150px;height:150px;background:#f0f0f0;border:3px solid #ccc;">
@@ -200,7 +200,7 @@ include("includes/header.php");
                             </div>
 
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">Update Picture</button>
+                                <button type="submit" class="btn" style="background: #14B8A6; color: white;">Update Picture</button>
                             </div>
                         </form>
                     </div>
@@ -226,7 +226,7 @@ include("includes/header.php");
                             </div>
 
                             <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                <button type="submit" class="btn" style="background: #14B8A6; color: white;">Save Changes</button>
                                 <a href="student_dashboard.php" class="btn btn-outline-secondary">Cancel</a>
                             </div>
                         </form>
@@ -253,7 +253,7 @@ include("includes/header.php");
                             </div>
 
                             <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary">Change Password</button>
+                                <button type="submit" class="btn" style="background: #14B8A6; color: white;">Change Password</button>
                                 <a href="student_dashboard.php" class="btn btn-outline-secondary">Cancel</a>
                             </div>
                         </form>

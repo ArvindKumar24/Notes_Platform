@@ -42,23 +42,129 @@ include("./header.php");
 ?>
 <div class="manage-container">
     <div class="container">
-        <div class="manage-header">
-            <h2>📂 Manage Categories</h2>
-            <div class="mt-3">
-                <a href="download_categories_report.php" class="btn btn-success">
-                    <i class="bi bi-download me-1"></i> Download Categories Report
-                </a>
+
+        <!-- Header -->
+        <div class="manage-header d-flex justify-content-between align-items-center flex-wrap">
+            <h2 class="mb-2 mb-md-0">📂 Manage Categories</h2>
+
+            <a href="download_categories_report.php"
+               class="btn mt-2 mt-md-0"
+               style="background: #14B8A6; color: white;">
+                <i class="bi bi-download me-1"></i> Download Categories Report
+            </a>
+        </div>
+
+        <!-- Add Category Section -->
+        <div class="section-card mb-4">
+            <h3>➕ Add New Category</h3>
+            <form method="POST" class="form-group d-flex flex-wrap gap-2 align-items-center">
+                <input type="text"
+                       name="name"
+                       placeholder="Enter category name..."
+                       required>
+
+                <button type="submit"
+                        name="add_category">
+                    Add Category
+                </button>
+            </form>
+        </div>
+
+        <!-- Existing Categories Heading -->
+        <h3 style="color: #1e293b; font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem;">
+            📋 Existing Categories
+        </h3>
+
+        <?php if (count($categories) > 0): ?>
+
+        <!-- Categories Table -->
+        <div class="categories-table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <?php foreach ($categories as $cat): ?>
+                    <tr>
+                        <td class="category-id">#<?= $cat['id'] ?></td>
+
+                        <td class="category-name">
+                            <?= htmlspecialchars($cat['name']) ?>
+                        </td>
+
+                        <td class="actions-cell">
+
+                            <!-- Edit Form -->
+                            <form method="POST" class="edit-form">
+                                <input type="hidden"
+                                       name="category_id"
+                                       value="<?= $cat['id'] ?>">
+
+                                <input type="text"
+                                       name="name"
+                                       value="<?= htmlspecialchars($cat['name']) ?>"
+                                       required>
+
+                                <button type="submit"
+                                        name="edit_category"
+                                        class="action-btn btn-update">
+                                    ✓ Update
+                                </button>
+                            </form>
+
+                            <!-- Delete Form -->
+                            <form method="POST"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('Delete this category? This action cannot be undone.');">
+
+                                <input type="hidden"
+                                       name="category_id"
+                                       value="<?= $cat['id'] ?>">
+
+                                <button type="submit"
+                                        name="delete_category"
+                                        class="action-btn btn-delete">
+                                    🗑 Delete
+                                </button>
+                            </form>
+
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <?php else: ?>
+
+        <!-- Empty State -->
+        <div class="section-card">
+            <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <p><strong>No categories yet</strong></p>
+                <p style="font-size: 0.9rem;">
+                    Start by adding your first category above.
+                </p>
             </div>
         </div>
 
-        <!-- Rest of your existing code -->
-<!-- Back Button -->
-<div style="margin-bottom: 1.5rem; margin-top: 1rem;">
-    <a href="dashboard.php" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
-    </a>
-</div>
+        <?php endif; ?>
 
+        <!-- Bottom Action Bar -->
+        <div class="d-flex justify-content-start mt-4">
+            <a href="dashboard.php"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+
+    </div>
+</div>
 <style>
 .manage-container {
     background: #f8fafc;
@@ -67,7 +173,7 @@ include("./header.php");
 }
 
 .manage-header {
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    background: linear-gradient(135deg, #14B8A6 0%, #0d9488 100%);
     color: white;
     padding: 2rem;
     border-radius: 12px;
@@ -114,13 +220,13 @@ include("./header.php");
 
 .form-group input:focus {
     outline: none;
-    border-color: #dc2626;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    border-color: #14B8A6;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
 .form-group button {
     padding: 0.75rem 1.5rem;
-    background: #dc2626;
+    background: #14B8A6;
     color: white;
     border: none;
     border-radius: 6px;
@@ -130,9 +236,9 @@ include("./header.php");
 }
 
 .form-group button:hover {
-    background: #b91c1c;
+    background: #0d9488;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.2);
+    box-shadow: 0 4px 8px rgba(20, 184, 166, 0.2);
 }
 
 .categories-table-wrapper {
@@ -174,7 +280,7 @@ table tbody tr:hover {
 
 .category-id {
     font-weight: 600;
-    color: #dc2626;
+    color: #14B8A6;
 }
 
 .category-name {
@@ -207,8 +313,8 @@ table tbody tr:hover {
 
 .edit-form input:focus {
     outline: none;
-    border-color: #dc2626;
-    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1);
+    border-color: #14B8A6;
+    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1);
 }
 
 .action-btn {
@@ -232,12 +338,12 @@ table tbody tr:hover {
 }
 
 .btn-delete {
-    background: #ef4444;
+    background: #F59E0B;
     color: white;
 }
 
 .btn-delete:hover {
-    background: #dc2626;
+    background: #0d9488;
 }
 
 .empty-state {
@@ -284,66 +390,6 @@ table tbody tr:hover {
 }
 </style>
 
-<div class="manage-container">
-    <div class="container">
-        <div class="manage-header">
-            <h2>📂 Manage Categories</h2>
-        </div>
 
-        <div class="section-card">
-            <h3>➕ Add New Category</h3>
-            <form method="POST" class="form-group">
-                <input type="text" name="name" placeholder="Enter category name..." required>
-                <button type="submit" name="add_category">Add Category</button>
-            </form>
-        </div>
-
-        <h3 style="color: #1e293b; font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem;">📋 Existing Categories</h3>
-
-        <?php if (count($categories) > 0): ?>
-        <div class="categories-table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($categories as $cat): ?>
-                    <tr>
-                        <td class="category-id">#<?= $cat['id'] ?></td>
-                        <td class="category-name"><?= htmlspecialchars($cat['name']) ?></td>
-                        <td class="actions-cell">
-                            <!-- Edit Form -->
-                            <form method="POST" class="edit-form">
-                                <input type="hidden" name="category_id" value="<?= $cat['id'] ?>">
-                                <input type="text" name="name" value="<?= htmlspecialchars($cat['name']) ?>" required>
-                                <button type="submit" name="edit_category" class="action-btn btn-update">✓ Update</button>
-                            </form>
-
-                            <!-- Delete Form -->
-                            <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this category? This action cannot be undone.');">
-                                <input type="hidden" name="category_id" value="<?= $cat['id'] ?>">
-                                <button type="submit" name="delete_category" class="action-btn btn-delete">🗑 Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-        <?php else: ?>
-        <div class="section-card">
-            <div class="empty-state">
-                <div class="empty-state-icon">📭</div>
-                <p><strong>No categories yet</strong></p>
-                <p style="font-size: 0.9rem;">Start by adding your first category above.</p>
-            </div>
-        </div>
-        <?php endif; ?>
-    </div>
-</div>
 
 <?php include("../includes/footer.php"); ?>

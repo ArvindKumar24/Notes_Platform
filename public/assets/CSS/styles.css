@@ -6,22 +6,22 @@
 }
 
 :root {
-    --primary-color: #dc2626;
-    --primary-hover: #b91c1c;
-    --secondary-color: #64748b;
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --danger-color: #ef4444;
-    --dark-color: #1e293b;
-    --light-color: #f8fafc;
-    --gray-100: #f1f5f9;
+    --primary-color: #14B8A6;
+    --primary-hover: #0d9488;
+    --secondary-color: #38BDF8;
+    --success-color: #14B8A6;
+    --warning-color: #F59E0B;
+    --danger-color: #F59E0B;
+    --dark-color: #1E293B;
+    --light-color: #F1F5F9;
+    --gray-100: #F1F5F9;
     --gray-200: #e2e8f0;
     --gray-300: #cbd5e1;
     --gray-400: #94a3b8;
     --gray-500: #64748b;
     --gray-600: #475569;
     --gray-700: #334155;
-    --gray-800: #1e293b;
+    --gray-800: #1E293B;
     --gray-900: #0f172a;
     --border-radius: 12px;
     --border-radius-lg: 16px;
@@ -211,7 +211,7 @@ body {
 .form-control:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
 .form-select {
@@ -227,7 +227,7 @@ body {
 .form-select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
 textarea.form-control {
@@ -237,7 +237,7 @@ textarea.form-control {
 
 /* Upload Specific Styles */
 .upload-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #14B8A6 0%, #0d9488 100%);
     color: white;
     padding: 4rem 2rem;
     text-align: center;

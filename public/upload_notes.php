@@ -36,7 +36,7 @@ if (isset($_POST['upload'])) {
 
             if (!in_array($ext, $allowed)) {
                 $message = "Only PDF and DOCX files are allowed.";
-            } elseif ($file['size'] > 100 * 1024 * 1024) {
+            } elseif ($file['size'] > 1024 * 1024 * 1024) {
                 $message = "File size must not exceed 1GB.";
             } else {
 
@@ -111,10 +111,7 @@ $cats = $pdo->query("SELECT * FROM categories")->fetchAll();
 
 <div class="container mt-4">
 
-    <a href="<?php echo $_SESSION['role'] === 'student' ? 'student_dashboard.php' : 'teacher_dashboard.php'; ?>" 
-       class="btn btn-outline-secondary btn-sm mb-3">
-        <i class="bi bi-arrow-left"></i> Back to Dashboard
-    </a>
+    
 
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-7">
@@ -150,10 +147,18 @@ $cats = $pdo->query("SELECT * FROM categories")->fetchAll();
                         <label class="form-label">Upload File</label>
                         <input type="file" class="form-control mb-3" name="file" accept=".pdf,.docx">
 
-                        <button type="submit" name="upload" class="btn btn-danger w-100">
-                            <i class="bi bi-upload"></i> Upload Note
-                        </button>
+                     <button type="submit" name="upload" class="btn mb-3"
+                        style="background: #14B8A6; color: white; width: 100%;">
+                    <i class="bi bi-upload"></i> Upload Note
+                </button>
 
+                <div class="text-center">
+                    <a href="<?php echo $_SESSION['role'] === 'student' ? 'student_dashboard.php' : 'teacher_dashboard.php'; ?>" 
+                    class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+    
                     </form>
 
                 </div>

@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $allowed = ["pdf", "docx"];
             $filename = $_FILES["file"]["name"];
             $filesize = $_FILES["file"]["size"];
-            $max_size = 100 * 1024 * 1024;
+            $max_size = 1024 * 1024 * 1024;
 
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
@@ -127,12 +127,7 @@ $page_title = "Upload Assessments - Notes Platform";
 include("includes/header.php");
 ?>
 
-<!-- Back Button -->
-<div class="mb-3">
-    <a href="<?php echo $_SESSION['role'] === 'student' ? 'student_dashboard.php' : 'teacher_dashboard.php'; ?>" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
-    </a>
-</div>
+
 
 <div class="row justify-content-center">
     <div class="col-lg-7">
@@ -176,10 +171,16 @@ include("includes/header.php");
                     </div>
 
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-danger">
+                        <button type="submit" class="btn" style="background: #14B8A6; color: white;">
                             <i class="bi bi-upload me-1"></i>Upload Assessment
                         </button>
                         <a href="teacher_dashboard.php" class="btn btn-outline-secondary">Cancel</a>
+                        <!-- Back Button -->
+
+                            <a href="<?php echo $_SESSION['role'] === 'student' ? 'student_dashboard.php' : 'teacher_dashboard.php'; ?>" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+                            </a>
+
                     </div>
                 </form>
             </div>
@@ -192,10 +193,10 @@ include("includes/header.php");
             <div class="card-body">
                 <h2 class="h5 mb-3">Tips for Great Assessments</h2>
                 <ul class="list-unstyled small text-muted mb-0">
-                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Use clear titles so students understand the topic</li>
-                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Add instructions in the description if needed</li>
-                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Prefer PDF format to keep formatting intact</li>
-                    <li><i class="bi bi-check-circle text-success me-2"></i>Assign the correct category for easy discovery</li>
+                    <li class="mb-2"><i class="bi bi-check-circle" style="color: #14B8A6;" me-2></i>Use clear titles so students understand the topic</li>
+                    <li class="mb-2"><i class="bi bi-check-circle" style="color: #14B8A6;" me-2></i>Add instructions in the description if needed</li>
+                    <li class="mb-2"><i class="bi bi-check-circle" style="color: #14B8A6;" me-2></i>Prefer PDF format to keep formatting intact</li>
+                    <li><i class="bi bi-check-circle" style="color: #14B8A6;" me-2></i>Assign the correct category for easy discovery</li>
                 </ul>
             </div>
         </div>

@@ -24,75 +24,285 @@ include("./header.php");
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <style>
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .admin-header h1 {
+            font-size: 2rem;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .welcome-text {
+            color: #64748b;
+            margin: 0.5rem 0 0 0;
+        }
+
+        /* Dashboard Stats Grid */
         .dashboard-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
         }
+
         .stat-card {
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
-            border-left: 4px solid #007bff;
+            padding: 1.75rem;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #14B8A6;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            position: relative;
         }
+
+        .stat-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
         .stat-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-            color: #666;
+            margin: 0 0 1rem 0;
+            font-size: 0.875rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
         }
+
         .stat-number {
-            font-size: 32px;
-            font-weight: bold;
-            color: #007bff;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #14B8A6;
+            line-height: 1;
         }
-        .stat-card.pending { border-left-color: #ffc107; }
-        .stat-card.pending .stat-number { color: #ffc107; }
-        .stat-card.success { border-left-color: #28a745; }
-        .stat-card.success .stat-number { color: #28a745; }
-        .stat-card.danger { border-left-color: #dc3545; }
-        .stat-card.danger .stat-number { color: #dc3545; }
-        
+
+        .stat-card.pending { border-left-color: #F59E0B; }
+        .stat-card.pending .stat-number { color: #F59E0B; }
+
+        .stat-card.success { border-left-color: #14B8A6; }
+        .stat-card.success .stat-number { color: #14B8A6; }
+
+        .stat-card.danger { border-left-color: #F59E0B; }
+        .stat-card.danger .stat-number { color: #F59E0B; }
+
+        /* Navigation Section */
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin: 2.5rem 0 1.5rem 0;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #14B8A6;
+        }
+
+        .section-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        /* Navigation Cards Grid */
         .navigation-links {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin: 30px 0;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0 2rem 0;
         }
+
         .nav-card {
             background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1.75rem;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
             text-align: center;
             text-decoration: none;
             color: #333;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
+
+        .nav-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #14B8A6;
+            transition: height 0.3s ease;
+        }
+
         .nav-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(20, 184, 166, 0.15);
+            border-color: #14B8A6;
             text-decoration: none;
             color: #333;
         }
-        .nav-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 18px;
+
+        .nav-card:hover::before {
+            height: 100%;
+            opacity: 0.1;
+            z-index: -1;
         }
+
+        .nav-card h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.125rem;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
         .nav-card p {
             margin: 0;
-            color: #666;
-            font-size: 14px;
+            color: #64748b;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Recent Activity Section */
+        .activity-section {
+            margin-top: 2.5rem;
+            padding: 1.75rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .activity-section h4 {
+            margin: 0 0 1.5rem 0;
+            font-size: 1.125rem;
+            color: #1e293b;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .activity-section h4::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: #14B8A6;
+            border-radius: 2px;
+            margin-right: 0.75rem;
+        }
+
+        .activity-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .activity-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-info {
+            flex: 1;
+        }
+
+        .activity-info strong {
+            display: block;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-meta {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .activity-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .activity-badge.approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .activity-badge.pending {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .activity-badge.rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .activity-type {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: #e0f2fe;
+            color: #0369a1;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .dashboard-stats {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 1rem;
+            }
+
+            .stat-card {
+                padding: 1.25rem;
+            }
+
+            .stat-number {
+                font-size: 1.75rem;
+            }
+
+            .navigation-links {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>Admin Dashboard</h2>
-    <p>Welcome back, <?= htmlspecialchars($_SESSION['name'] ?? 'Admin') ?>!</p>
+    <div class="admin-header">
+        <div>
+            <h1>Admin Dashboard</h1>
+            <p class="welcome-text">Welcome back, <?= htmlspecialchars($_SESSION['name'] ?? 'Admin') ?>!</p>
+        </div>
+    </div>
 
+    <!-- Statistics Section -->
     <div class="dashboard-stats">
         <div class="stat-card">
             <h3>Total Users</h3>
@@ -116,9 +326,12 @@ include("./header.php");
         </div>
     </div>
 
-    <h3>Quick Navigation</h3>
+    <!-- Quick Navigation Section -->
+    <div class="section-header">
+        <h3>Quick Navigation</h3>
+    </div>
     <div class="navigation-links">
-        <a href="manage_users.php" class="nav-card" style="border-top: 4px solid #28a745;">
+        <a href="manage_users.php" class="nav-card">
             <h3>👥 Manage Users</h3>
             <p>View, edit, add users and manage roles</p>
         </a>
@@ -130,10 +343,10 @@ include("./header.php");
             <h3>📂 Manage Categories</h3>
             <p>Add, edit, or remove content categories</p>
         </a>
-        
     </div>
 
-    <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+    <!-- Recent Activity Section -->
+    <div class="activity-section">
         <h4>Recent Activity</h4>
         <?php
         // Get recent uploads
@@ -146,27 +359,26 @@ include("./header.php");
         ")->fetchAll(PDO::FETCH_ASSOC);
         
         if ($recentUploads): ?>
-            <ul style="list-style: none; padding: 0;">
+            <ul class="activity-list">
                 <?php foreach ($recentUploads as $upload): ?>
-                    <li style="padding: 8px 0; border-bottom: 1px solid #ddd;">
-                        <strong><?= htmlspecialchars($upload['title']) ?></strong> 
-                        (<?= ucfirst(str_replace('_', ' ', $upload['type'])) ?>)
-                        <br>
-                        <small>
-                            Uploaded by <?= htmlspecialchars($upload['uploader']) ?> 
-                            on <?= $upload['uploaded_at'] ?>
-                            - Status: 
-                            <span style="color: 
-                                <?= $upload['status'] == 'approved' ? 'green' : 
-                                   ($upload['status'] == 'rejected' ? 'red' : 'orange') ?>">
-                                <?= ucfirst($upload['status']) ?>
-                            </span>
-                        </small>
+                    <li class="activity-item">
+                        <div class="activity-info">
+                            <strong><?= htmlspecialchars($upload['title']) ?></strong>
+                            <div class="activity-meta">
+                                Uploaded by <strong><?= htmlspecialchars($upload['uploader']) ?></strong>
+                                <span class="activity-type"><?= ucfirst(str_replace('_', ' ', $upload['type'])) ?></span>
+                                <br>
+                                <small><?= $upload['uploaded_at'] ?></small>
+                            </div>
+                        </div>
+                        <span class="activity-badge <?= strtolower($upload['status']) ?>">
+                            <?= ucfirst($upload['status']) ?>
+                        </span>
                     </li>
                 <?php endforeach; ?>
             </ul>
         <?php else: ?>
-            <p>No recent uploads.</p>
+            <p style="color: #64748b; margin: 0;">No recent uploads.</p>
         <?php endif; ?>
     </div>
 </div>

@@ -32,25 +32,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                     <li class="nav-item">
                         <a class="nav-link" href="dashboard.php">Dashboard</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="manage_users.php">Manage Users</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="manage_notes.php">Manage Content</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="manage_categories.php">Categories</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../index.php">Back to Home</a>
-                    </li>
+                  
+                    
                 </ul>
                 <ul class="navbar-nav mb-2 mb-lg-0">
-                    <li class="nav-item d-flex align-items-center px-2 text-white-50">
-                        <small><i class="bi bi-shield-lock"></i> Admin: <?php echo htmlspecialchars($_SESSION["name"]); ?></small>
-                    </li>
+                   
                     <li class="nav-item">
-                        <a class="btn btn-outline-light btn-sm" href="../logout.php">Logout</a>
+                        <a class="btn btn-outline-light btn-sm"  style="background: #000b0a; color: white;"href="../logout.php">Logout</a>
                     </li>
                 </ul>
             </div>

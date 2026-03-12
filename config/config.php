@@ -15,16 +15,16 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Auto logout after 30 mins of inactivity
+
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1800)) {
     session_unset();
     session_destroy();
 }
 $_SESSION['LAST_ACTIVITY'] = time();
 
-// Database configuration
+
 $host = "localhost";
-$db   = "Notes_website";  // Your DB name
+$db   = "Notes_website"; 
 $user = "root";
 $pass = "password";
 

@@ -70,7 +70,7 @@ $page_title = "Create New Password - Notes Platform";
             <?php if ($success): ?>
                 <div class="alert alert-success">
                     Password reset successful!
-                    <a href="login.php" class="fw-bold text-success">Login</a>
+                    <a href="login.php" class="fw-bold" style="color: #14B8A6;">Login</a>
                 </div>
             <?php else: ?>
 
@@ -86,14 +86,14 @@ $page_title = "Create New Password - Notes Platform";
                         <label class="form-label">Confirm Password</label>
                         <input type="password" name="confirm_password" class="form-control mb-3" required>
 
-                        <button class="btn btn-danger w-100">Reset Password</button>
+                        <button class="btn" style="background: #14B8A6; color: white; width: 100%;">Reset Password</button>
                     </form>
                 <?php endif; ?>
 
             <?php endif; ?>
 
             <div class="mt-3">
-                <a href="login.php" class="fw-bold text-danger">Back to Login</a>
+                <a href="login.php" class="fw-bold" style="color: #14B8A6;">Back to Login</a>
             </div>
 
         </div>

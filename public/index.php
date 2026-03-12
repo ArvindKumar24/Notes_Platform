@@ -2,9 +2,9 @@
 require_once("../config/config.php");
 
 // Fetch stats
-$total_notes = $pdo->query("SELECT COUNT(*) FROM notes")->fetchColumn();
+$total_notes = $pdo->query("SELECT COUNT(*) FROM notes WHERE status = 'approved'")->fetchColumn();
 $total_users = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
-$total_downloads = $pdo->query("SELECT COALESCE(SUM(downloads_count),0) FROM notes")->fetchColumn();
+$total_downloads = $pdo->query("SELECT COALESCE(SUM(downloads_count),0) FROM notes WHERE status = 'approved'")->fetchColumn();
 
 // Recent notes
 $recent_notes = $pdo->query("
@@ -12,6 +12,7 @@ $recent_notes = $pdo->query("
     FROM notes n
     LEFT JOIN categories c ON n.category_id = c.id
     LEFT JOIN users u ON n.user_id = u.id
+    WHERE n.status = 'approved'
     ORDER BY n.uploaded_at DESC
     LIMIT 6
 ")->fetchAll(PDO::FETCH_ASSOC);
@@ -33,10 +34,10 @@ include("includes/header.php");
 .note-thumbnail {
     height:170px;display:flex;align-items:center;justify-content:center;
     color:#fff;font-size:2.7rem;position:relative;
-    background:linear-gradient(135deg,#667eea,#764ba2);
+    background:linear-gradient(135deg,#14B8A6,#0d9488);
 }
-.note-thumbnail.pdf { background:linear-gradient(135deg,#f093fb,#f5576c); }
-.note-thumbnail.doc { background:linear-gradient(135deg,#4facfe,#00f2fe); }
+.note-thumbnail.pdf { background:linear-gradient(135deg,#38BDF8,#0284C7); }
+.note-thumbnail.doc { background:linear-gradient(135deg,#38BDF8,#06B6D4); }
 .note-thumbnail.image { background:linear-gradient(135deg,#43e97b,#38f9d7); }
 
 .note-thumbnail img { width:100%;height:100%;object-fit:cover; }
@@ -70,7 +71,7 @@ include("includes/header.php");
 .note-author { display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem;font-size:.85rem;color:#475569; }
 .author-avatar {
     width:28px;height:28px;border-radius:50%;background:#f1f5f9;
-    display:flex;align-items:center;justify-content:center;font-weight:700;color:#dc2626;
+    display:flex;align-items:center;justify-content:center;font-weight:700;color:#14B8A6;
 }
 
 .note-meta { display:flex;gap:1rem;border-top:1px solid #e5e7eb;padding-top:.7rem;font-size:.8rem;color:#64748b; }
@@ -84,8 +85,8 @@ include("includes/header.php");
 .btn-preview { background:#f1f5f9;border:1px solid #e2e8f0;color:#475569; }
 .btn-preview:hover { background:#e2e8f0; }
 
-.btn-download { background:#dc2626;color:white; }
-.btn-download:hover { background:#b91c1c; }
+.btn-download { background:#14B8A6;color:white; }
+.btn-download:hover { background:#0d9488; }
 
 /* Modal */
 #previewModal {
@@ -111,7 +112,7 @@ include("includes/header.php");
 }
 </style>
 
-<div class="bg-danger text-white rounded-4 p-5 text-center shadow-sm">
+<div class="rounded-4 p-5 text-center shadow-sm" style="background: #14B8A6; color: white;">
     <h1 class="display-5 fw-bold mb-2">Share Knowledge, Grow Together</h1>
     <p class="lead mx-auto mb-4" style="max-width:640px">A platform for students and teachers to share academic notes.</p>
     <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
@@ -123,15 +124,15 @@ include("includes/header.php");
 <section class="my-5">
     <div class="row g-3 text-center">
         <div class="col-md-4"><div class="card shadow-sm border-0"><div class="card-body py-4">
-            <div class="display-5 fw-bold text-danger"><?= $total_notes ?></div><div class="text-muted">Study Materials</div>
+            <div class="display-5 fw-bold" style="color: #14B8A6;"><?= $total_notes ?></div><div class="text-muted">Study Materials</div>
         </div></div></div>
 
         <div class="col-md-4"><div class="card shadow-sm border-0"><div class="card-body py-4">
-            <div class="display-5 fw-bold text-danger"><?= $total_users ?></div><div class="text-muted">Active Users</div>
+            <div class="display-5 fw-bold" style="color: #14B8A6;"><?= $total_users ?></div><div class="text-muted">Active Users</div>
         </div></div></div>
 
         <div class="col-md-4"><div class="card shadow-sm border-0"><div class="card-body py-4">
-            <div class="display-5 fw-bold text-danger"><?= $total_downloads ?></div><div class="text-muted">Total Downloads</div>
+            <div class="display-5 fw-bold" style="color: #14B8A6;"><?= $total_downloads ?></div><div class="text-muted">Total Downloads</div>
         </div></div></div>
     </div>
 </section>
@@ -187,10 +188,7 @@ include("includes/header.php");
                     </div>
 
                     <div class="note-footer">
-                        <button class="note-footer-btn btn-preview" onclick='openPreview(<?= json_encode($note) ?>)'>
-                            <i class="bi bi-eye"></i> Preview
-                        </button>
-                        <a href="download.php?id=<?= $note["id"] ?>" class="note-footer-btn btn-download">
+                        <a href="download.php?id=<?= $note["id"] ?>" class="note-footer-btn btn-download" style="flex: 1;">
                             <i class="bi bi-download"></i> Download
                         </a>
                     </div>
@@ -205,86 +203,23 @@ include("includes/header.php");
         <div style="font-size:3rem;">📭</div>
         <h5 class="mt-3">No notes yet</h5>
         <p class="text-muted">Be the first to upload.</p>
-        <a href="upload_notes.php" class="btn btn-danger">Upload Note</a>
+        <a href="upload_notes.php" class="btn" style="background: #14B8A6; color: white;">Upload Note</a>
     </div>
     <?php endif; ?>
 </section>
 
 <!-- Modal -->
-<div id="previewModal">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h5 id="previewTitle" class="mb-0"></h5>
-            <button class="btn-close" onclick="closePreview()"></button>
-        </div>
-
-        <div class="modal-body">
-            <div class="preview-info-grid">
-                <div><strong>Category:</strong><br><span id="previewCategory"></span></div>
-                <div><strong>Type:</strong><br><span id="previewType"></span></div>
-                <div><strong>Uploader:</strong><br><span id="previewUploader"></span></div>
-                <div><strong>Date:</strong><br><span id="previewDate"></span></div>
-            </div>
-
-            <p><strong>Description:</strong></p>
-            <p id="previewDescription"></p>
-
-            <div id="previewFileContainer" class="preview-file"></div>
-        </div>
-
-        <div class="modal-footer">
-            <a id="previewDownloadLink" class="btn btn-danger">📥 Download</a>
-            <button class="btn btn-secondary" onclick="closePreview()">Close</button>
-        </div>
-    </div>
+<div id="previewModal" style="display:none;">
 </div>
 
 <script>
-function openPreview(note){
-    const m = document.getElementById("previewModal");
-    const file = "../" + note.file_path;
-    const ext = file.split('.').pop().toLowerCase();
-
-    previewTitle.textContent = note.title;
-    previewCategory.textContent = note.category_name || "—";
-    previewType.textContent = (note.type || "").replace(/_/g," ").toUpperCase();
-    previewUploader.textContent = note.uploader_name || "Unknown";
-    previewDate.textContent = new Date(note.uploaded_at).toLocaleDateString();
-    previewDescription.textContent = note.description || "No description provided";
-
-    previewDownloadLink.href = file;
-    previewDownloadLink.download = note.title + "." + ext;
-
-    const box = previewFileContainer;
-    box.innerHTML = "";
-
-    if(["jpg","jpeg","png","gif"].includes(ext)){
-        let img = new Image();
-        img.src = file;
-        img.style.maxWidth = "100%";
-        img.style.maxHeight = "420px";
-        box.appendChild(img);
-    } else if(ext === "pdf"){
-        box.innerHTML = `<iframe src="${file}" style="width:100%;height:420px;border:0;border-radius:8px"></iframe>`;
-    } else if(ext === "txt"){
-        fetch(file).then(r=>r.text()).then(t=>{
-            box.innerHTML = `<pre style="white-space:pre-wrap;max-height:420px;overflow:auto">${t}</pre>`;
-        });
-    } else {
-        box.innerHTML = `<div class="text-muted text-center">Preview not available for ${ext.toUpperCase()}</div>`;
-    }
-
-    m.style.display = "flex";
-}
-function closePreview(){ previewModal.style.display="none"; }
-window.addEventListener("keydown", e => { if(e.key==="Escape") closePreview(); });
 </script>
 
 <section class="my-5">
     <div class="bg-light border rounded-4 p-5 text-center shadow-sm">
         <h2 class="h4 mb-3">Ready to Share Your Knowledge?</h2>
         <p class="text-muted mb-4">Join our community of students and teachers.</p>
-        <a href="register.php" class="btn btn-danger btn-lg">Get Started</a>
+        <a href="register.php" class="btn btn-lg" style="background: #14B8A6; color: white;">Get Started</a>
     </div>
 </section>
 

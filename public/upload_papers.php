@@ -33,14 +33,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $allowed = ["pdf", "docx"];
             $filename = $_FILES["file"]["name"];
             $filesize = $_FILES["file"]["size"];
-            $max_size = 5 * 1024 * 1024;  // 5MB
+            $max_size = 100 * 1024 * 1024;  // 100MB
 
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
             if (!in_array($ext, $allowed)) {
                 $message = "Only PDF and DOCX files are allowed.";
             } elseif ($filesize > $max_size) {
-                $message = "File size must not exceed 5MB.";
+                $message = "File size must not exceed 100MB.";
             } elseif ($filesize <= 0) {
                 $message = "File is empty.";
             } else {
@@ -140,11 +140,7 @@ include("includes/header.php");
 
 <!-- HTML FORM SAME AS YOUR VERSION BELOW -->
 
-<div class="mb-3">
-    <a href="<?php echo $_SESSION['role'] === 'student' ? 'student_dashboard.php' : 'teacher_dashboard.php'; ?>" 
-       class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
-    </a>
+
 </div>
 
 <div class="row justify-content-center">
@@ -189,10 +185,15 @@ include("includes/header.php");
                     </div>
 
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-danger">
+                        <button type="submit" class="btn" style="background: #14B8A6; color: white;">
                             <i class="bi bi-upload me-1"></i>Upload Paper
                         </button>
                         <a href="teacher_dashboard.php" class="btn btn-outline-secondary">Cancel</a>
+                        
+                            <a href="<?php echo $_SESSION['role'] === 'student' ? 'student_dashboard.php' : 'teacher_dashboard.php'; ?>" 
+                            class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+                            </a>
                     </div>
                 </form>
 

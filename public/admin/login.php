@@ -43,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <div class="card shadow-sm">
                     <div class="card-body p-4">
                         <div class="text-center mb-4">
-                            <div class="bg-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
+                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;background:#14B8A6;">
                                 <span class="text-white fw-bold">N</span>
                             </div>
                             <h1 class="h4 mb-0">Admin Login</h1>
@@ -67,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                 <input type="password" class="form-control" name="password" placeholder="NotesShare" required>
                             </div>
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-danger">Sign In</button>
+                                <button type="submit" class="btn" style="background: #14B8A6; color: white;">Sign In</button>
                             </div>
                         </form>
                     </div>

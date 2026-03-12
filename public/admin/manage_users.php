@@ -1,5 +1,7 @@
 <?php
 require_once("../../config/config.php");
+require_once __DIR__ . '/../includes/EmailSender.php';
+require_once __DIR__ . '/../../config/smtp_config.php';
 
 // only admin access
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
@@ -69,7 +71,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
         $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role, created_at) VALUES (?, ?, ?, ?, NOW())");
         $stmt->execute([$name, $email, $hashed_password, $role]);
 
-        $message = "User added successfully!";
+        // Send welcome email
+        try {
+            $mailer = new EmailSender();
+            $emailResult = $mailer->sendWelcomeEmail($email, $name, $password);
+            error_log('Admin created user email sent to ' . $email . ': ' . json_encode($emailResult));
+        } catch (Exception $e) {
+            error_log('Admin created user email error: ' . $e->getMessage());
+        }
+
+        $message = "User added successfully! Welcome email sent to " . htmlspecialchars($email);
         $messageType = "success";
     } catch (Exception $e) {
         $message = $e->getMessage();
@@ -123,112 +134,30 @@ try {
 include("./header.php");
 ?>
 <div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col-lg-8">
-            <h2 class="mb-3"><i class="bi bi-people-fill me-2"></i>Manage Users</h2>
+
+    <!-- Header Row -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-lg-6">
+            <h2 class="mb-0">
+                <i class="bi bi-people-fill me-2"></i>Manage Users
+            </h2>
         </div>
-        <div class="col-lg-4 text-end">
-            
-            <a href="download_users_report.php" class="btn btn-info">
-                <i class="bi bi-download me-1"></i> Download Users Report
-            </a>
-        </div>
-    </div>
-
-    <!-- Rest of your existing code -->
-<!-- Back Button -->
-<div class="d-flex justify-content-between align-items-center mb-3 mt-3">
-
-    <!-- Left Button -->
-    <a href="dashboard.php" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
-    </a>
-
-    <!-- Right Button -->
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addUserModal">
-        <i class="bi bi-plus-circle me-1"></i> Add New User
-    </button>
-
-</div>
-
-
-
-
-    <?php if ($message): ?>
-        <div class="alert alert-<?php echo $messageType; ?> alert-dismissible fade show" role="alert">
-            <?php echo htmlspecialchars($message); ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-
-    <!-- Add User Modal -->
-    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="addUserModalLabel"><i class="bi bi-person-plus me-1"></i>Add New User</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form method="POST" novalidate>
-                    <input type="hidden" name="action" value="add_user">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
-                            <small class="form-text text-muted">Letters, spaces, hyphens, and apostrophes only</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email Address</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="role" class="form-label">Role</label>
-                            <select class="form-select" id="role" name="role" required>
-                                <option value="student">Student</option>
-                                <option value="teacher">Teacher</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                            <small class="form-text text-muted d-block mt-2">
-                                <strong>Password must contain:</strong>
-                                <ul class="mb-0 mt-1">
-                                    <li>At least 8 characters</li>
-                                    <li>One uppercase letter (A-Z)</li>
-                                    <li>One lowercase letter (a-z)</li>
-                                    <li>One number (0-9)</li>
-                                    <li>One special character (!@#$%^&* etc.)</li>
-                                </ul>
-                            </small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="confirm_password" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-check-circle me-1"></i>Add User
-                        </button>
-                    </div>
-                </form>
-            </div>
+        <div class="col-lg-6 text-lg-end mt-3 mt-lg-0">
+            <button class="btn" style="background: #14B8A6; color: white;"
+                data-bs-toggle="modal" data-bs-target="#addUserModal">
+                <i class="bi bi-plus-circle me-1"></i> Add New User
+            </button>
         </div>
     </div>
 
-    <!-- Users Table -->
+        <!-- Users Table -->
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header" style="background: #14B8A6; color: white;">
             <i class="bi bi-table me-1"></i>User List (Total: <?php echo count($users); ?>)
         </div>
+
         <div class="card-body p-0">
+
             <?php if (count($users) > 0): ?>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -246,14 +175,19 @@ include("./header.php");
                             <?php foreach ($users as $u): ?>
                                 <tr>
                                     <td>
-                                        <span class="badge bg-secondary"><?php echo htmlspecialchars($u['id']); ?></span>
+                                        <span class="badge bg-secondary">
+                                            <?php echo htmlspecialchars($u['id']); ?>
+                                        </span>
                                     </td>
-                                    <td><strong><?php echo htmlspecialchars($u['name']); ?></strong></td>
+                                    <td>
+                                        <strong><?php echo htmlspecialchars($u['name']); ?></strong>
+                                    </td>
                                     <td><?php echo htmlspecialchars($u['email']); ?></td>
                                     <td>
                                         <form method="POST" style="display:inline;">
                                             <input type="hidden" name="user_id" value="<?php echo $u['id']; ?>">
-                                            <select name="role" class="form-select form-select-sm" onchange="this.form.submit();" style="width: auto;">
+                                            <select name="role" class="form-select form-select-sm"
+                                                onchange="this.form.submit();" style="width: auto;">
                                                 <option value="student" <?php echo $u['role'] === 'student' ? 'selected' : ''; ?>>Student</option>
                                                 <option value="teacher" <?php echo $u['role'] === 'teacher' ? 'selected' : ''; ?>>Teacher</option>
                                                 <option value="admin" <?php echo $u['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
@@ -265,9 +199,12 @@ include("./header.php");
                                         <small><?php echo date('M d, Y', strtotime($u['created_at'])); ?></small>
                                     </td>
                                     <td>
-                                        <form method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.');">
+                                        <form method="POST" style="display:inline;"
+                                            onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.');">
                                             <input type="hidden" name="user_id" value="<?php echo $u['id']; ?>">
-                                            <button type="submit" name="delete_user" class="btn btn-danger btn-sm">
+                                            <button type="submit" name="delete_user"
+                                                class="btn btn-sm"
+                                                style="background: #F59E0B; color: white;">
                                                 <i class="bi bi-trash me-1"></i>Delete
                                             </button>
                                         </form>
@@ -277,14 +214,108 @@ include("./header.php");
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Bottom Action Bar -->
+                <div class="d-flex justify-content-between align-items-center p-3 border-top">
+
+                    <a href="dashboard.php"
+                        class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+
+                    <a href="download_users_report.php"
+                        class="btn btn-info">
+                        <i class="bi bi-download me-1"></i> Download Users Report
+                    </a>
+
+                </div>
+
             <?php else: ?>
                 <div class="text-center py-5">
                     <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
                     <p class="text-muted mt-3">No users found.</p>
                 </div>
             <?php endif; ?>
+
+        </div>
+    </div>
+
+
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #14B8A6; color: white;">
+                <h5 class="modal-title" id="addUserModalLabel">
+                    <i class="bi bi-person-plus me-2"></i>Add New User
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="">
+                <div class="modal-body">
+                    <input type="hidden" name="action" value="add_user">
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                        <small class="text-muted">2-100 characters, letters/spaces/hyphens/apostrophes only</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <small class="text-muted">
+                            Minimum 8 characters with:
+                            <ul class="mb-0 mt-2">
+                                <li>1 uppercase letter</li>
+                                <li>1 lowercase letter</li>
+                                <li>1 number</li>
+                                <li>1 special character (!@#$%^&*...)</li>
+                            </ul>
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="student">Student</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn" style="background: #14B8A6; color: white;">
+                        <i class="bi bi-plus-circle me-1"></i>Add User
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+<!-- Display Message Alert -->
+<?php if ($message): ?>
+    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050; margin-top: 20px;">
+        <div class="alert alert-<?php echo $messageType; ?> alert-dismissible fade show" role="alert">
+            <strong><?php echo ucfirst($messageType) === 'Success' ? '✓' : '⚠'; ?></strong>
+            <?php echo htmlspecialchars($message); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+<?php endif; ?>
 
 <?php include("../includes/footer.php"); ?>

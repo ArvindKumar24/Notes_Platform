@@ -81,11 +81,11 @@ $page_title = "Forgot Password - Notes Platform";
                 <label class="form-label fw-semibold">Email</label>
                 <input type="email" name="email" class="form-control mb-3" required>
 
-                <button class="btn btn-danger w-100">Send Reset Link</button>
+                <button class="btn" style="background: #14B8A6; color: white; width: 100%;">Send Reset Link</button>
             </form>
 
             <div class="mt-3">
-                <a href="login.php" class="text-danger fw-bold">Back to Login</a>
+                <a href="login.php" class="fw-bold" style="color: #14B8A6;">Back to Login</a>
             </div>
 
         </div>

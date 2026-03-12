@@ -7,24 +7,17 @@ if (!isset($_SESSION["user_id"])) {
 }
 
 // Get filters
-$type_filter = $_GET['type'] ?? '';
 $category_filter = $_GET['category'] ?? '';
 $search = $_GET['search'] ?? '';
 
-// Build query
+// Build query - ONLY show notes
 $query = "SELECT n.*, u.name AS uploader, c.name AS category_name 
           FROM notes n 
           LEFT JOIN users u ON n.user_id = u.id 
           LEFT JOIN categories c ON n.category_id = c.id 
-          WHERE 1=1";
+          WHERE n.status = 'approved' AND n.type = 'note'";
 
 $params = [];
-
-// Apply type filter
-if ($type_filter && in_array($type_filter, ['note', 'past_paper', 'assessment'])) {
-    $query .= " AND n.type = ?";
-    $params[] = $type_filter;
-}
 
 // Apply category filter
 if ($category_filter && is_numeric($category_filter)) {
@@ -55,32 +48,18 @@ include("includes/header.php");
 
 ?>
 
-<!-- Back Button -->
-<div class="mb-3">
-    <a href="index.php" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left me-1"></i>Back to Home
-    </a>
-</div>
+
 
 <div class="card shadow-sm mb-4">
     <div class="card-body">
-        <h2 class="h4 mb-3">Browse Study Materials</h2>
+        <h2 class="h4 mb-3">Browse Study Notes</h2>
         <form method="GET">
             <div class="row g-3 align-items-end">
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <label class="form-label">Search</label>
                     <input type="text" class="form-control" name="search" placeholder="Search by title, description, or category..." value="<?php echo htmlspecialchars($search); ?>">
                 </div>
-                <div class="col-md-3 col-6">
-                    <label class="form-label">Type</label>
-                    <select class="form-select" name="type">
-                        <option value="">All Types</option>
-                        <option value="note" <?php echo $type_filter=='note' ? 'selected' : ''; ?>>Notes</option>
-                        <option value="past_paper" <?php echo $type_filter=='past_paper' ? 'selected' : ''; ?>>Past Papers</option>
-                        <option value="assessment" <?php echo $type_filter=='assessment' ? 'selected' : ''; ?>>Assessments</option>
-                    </select>
-                </div>
-                <div class="col-md-3 col-6">
+                <div class="col-md-4">
                     <label class="form-label">Category</label>
                     <select class="form-select" name="category">
                         <option value="">All Categories</option>
@@ -92,7 +71,7 @@ include("includes/header.php");
                     </select>
                 </div>
                 <div class="col-12 d-flex gap-2">
-                    <button type="submit" class="btn btn-danger"><i class="bi bi-funnel me-1"></i>Filter</button>
+                    <button type="submit" class="btn" style="background: #14B8A6; color: white;"><i class="bi bi-funnel me-1"></i>Filter</button>
                     <a href="view_notes.php" class="btn btn-outline-secondary">Clear</a>
                 </div>
             </div>
@@ -108,7 +87,7 @@ include("includes/header.php");
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h3 class="h6 mb-0"><?php echo htmlspecialchars($note['title']); ?></h3>
-                            <span class="badge text-bg-primary">
+                            <span class="badge" style="background: #14B8A6; color: white;">
                                 <?php echo ucfirst(str_replace('_', ' ', $note['type'])); ?>
                             </span>
                         </div>
@@ -134,7 +113,7 @@ include("includes/header.php");
         <div class="card-body">
             <h3 class="h5">No notes found</h3>
             <p class="text-muted mb-3">Try adjusting your search filters or upload the first note!</p>
-            <a href="upload_notes.php" class="btn btn-danger">Upload First Note</a>
+            <a href="upload_notes.php" class="btn" style="background: #14B8A6; color: white;">Upload First Note</a>
         </div>
     </div>
 <?php endif; ?>

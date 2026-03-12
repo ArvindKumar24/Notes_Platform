@@ -30,13 +30,23 @@ if (isset($_POST['delete_note'])) {
     $stmtFile->execute([$noteId]);
     $note = $stmtFile->fetch();
 
-    if ($note && file_exists("../../" . $note['file_path'])) {
-        unlink("../../" . $note['file_path']);
+    if ($note) {
+        $filePath = UPLOAD_PATH . basename($note['file_path']);
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
     }
 
     // Delete DB record
     $stmt = $pdo->prepare("DELETE FROM notes WHERE id = ?");
     $stmt->execute([$noteId]);
+
+    // Reset AUTO_INCREMENT if all notes are deleted
+    $countStmt = $pdo->query("SELECT COUNT(*) FROM notes");
+    $count = $countStmt->fetchColumn();
+    if ($count == 0) {
+        $pdo->query("ALTER TABLE notes AUTO_INCREMENT = 1");
+    }
 
     // Send delete email
     if ($info) {
@@ -113,36 +123,130 @@ $notes = $pdo->query("
 ")->fetchAll(PDO::FETCH_ASSOC);
 
 include("./header.php");
-?>
-
-<div class="manage-container">
+?><div class="manage-container">
     <div class="container">
+
+        <!-- Header -->
         <div class="manage-header">
             <h2>📚 Manage Notes & Uploads</h2>
-            <div class="mt-3">
-                <a href="download_notes_report.php" class="btn btn-success">
-                    <i class="bi bi-download me-1"></i> Download Notes Report
-                </a>
-            </div>
         </div>
 
-        <!-- Rest of your existing code -->
+        <!-- Notes Table -->
+        <div class="notes-table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th>Uploaded By</th>
+                        <th>File</th>
+                        <th>Status</th>
+                        <th>Uploaded At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
 
-<!-- Back Button -->
-<div style="margin-bottom: 1.5rem; margin-top: 1rem;">
-    <a href="dashboard.php" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
-    </a>
+                <tbody>
+                <?php foreach ($notes as $n): ?>
+                    <tr>
+                        <td><?= $n['id'] ?></td>
+                        <td><?= htmlspecialchars($n['title']) ?></td>
+                        <td><?= htmlspecialchars($n['description']) ?></td>
+                        <td><?= htmlspecialchars($n['category_name']) ?></td>
+                        <td><?= ucfirst(str_replace('_', ' ', $n['type'])) ?></td>
+                        <td><?= htmlspecialchars($n['uploader_name'] ?? 'Unknown') ?></td>
+
+                        <td>
+                            <?php if (!empty($n['file_path'])): 
+                                $filePath = UPLOAD_PATH . basename($n['file_path']);
+                                $fileExists = file_exists($filePath);
+                            ?>
+                                <?php if ($fileExists): ?>
+                                    <span style="color: #10b981; font-weight: 600;">✓ File OK</span>
+                                <?php else: ?>
+                                    <span style="color: #F59E0B; font-weight: 600;">Missing</span>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <span style="color: #F59E0B; font-weight: 600;">Missing</span>
+                            <?php endif; ?>
+                        </td>
+
+                        <td>
+                            <span class="status-badge status-<?= $n['status'] ?>">
+                                <?= ucfirst($n['status']) ?>
+                            </span>
+                        </td>
+
+                        <td><?= date('M d, Y', strtotime($n['uploaded_at'])) ?></td>
+
+                        <td style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+
+                            <?php if ($n['status'] != 'approved'): ?>
+                            <form method="POST" style="display:inline;">
+                                <input type="hidden" name="note_id" value="<?= $n['id'] ?>">
+                                <button type="submit" name="approve_note"
+                                        class="action-btn btn-approve">
+                                    ✓ Approve
+                                </button>
+                            </form>
+                            <?php endif; ?>
+
+                            <?php if ($n['status'] != 'rejected'): ?>
+                            <form method="POST" style="display:inline;">
+                                <input type="hidden" name="note_id" value="<?= $n['id'] ?>">
+                                <button type="submit" name="reject_note"
+                                        class="action-btn btn-reject">
+                                    ✕ Reject
+                                </button>
+                            </form>
+                            <?php endif; ?>
+
+                            <form method="POST" style="display:inline;"
+                                  onsubmit="return confirm('Delete this note? This cannot be undone.');">
+                                <input type="hidden" name="note_id" value="<?= $n['id'] ?>">
+                                <button type="submit" name="delete_note"
+                                        class="action-btn btn-delete">
+                                    🗑 Delete
+                                </button>
+                            </form>
+
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bottom Action Bar -->
+        <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap">
+
+            <a href="dashboard.php" class="btn btn-outline-secondary btn-sm mb-2 mb-md-0">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+
+            <a href="download_notes_report.php"
+               class="btn"
+               style="background: #14B8A6; color: white;">
+                <i class="bi bi-download me-1"></i> Download Notes Report
+            </a>
+
+        </div>
+
+    </div>
 </div>
 
 <style>
+/* Your original CSS untouched */
 .manage-container {
     background: #f8fafc;
     padding: 2rem 0;
 }
 
 .manage-header {
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    background: linear-gradient(135deg, #14B8A6 0%, #0d9488 100%);
     color: white;
     padding: 2rem;
     border-radius: 12px;
@@ -246,21 +350,12 @@ table tbody tr:hover {
 }
 
 .btn-delete {
-    background: #ef4444;
+    background: #F59E0B;
     color: white;
 }
 
 .btn-delete:hover {
-    background: #dc2626;
-}
-
-.btn-view {
-    background: #3b82f6;
-    color: white;
-}
-
-.btn-view:hover {
-    background: #2563eb;
+    background: #14B8A6;
 }
 
 @media (max-width: 768px) {
@@ -280,71 +375,4 @@ table tbody tr:hover {
 }
 </style>
 
-<div class="manage-container">
-    <div class="container">
-        <div class="manage-header">
-            <h2>📚 Manage Notes & Uploads</h2>
-        </div>
-
-        <div class="notes-table-wrapper">
-            <table>
-        <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Category</th>
-            <th>Type</th>
-            <th>Uploaded By</th>
-            <th>File</th>
-            <th>Status</th>
-            <th>Uploaded At</th>
-            <th>Actions</th>
-        </tr>
-        <?php foreach ($notes as $n): ?>
-        <tr>
-            <td><?= $n['id'] ?></td>
-            <td><?= htmlspecialchars($n['title']) ?></td>
-            <td><?= htmlspecialchars($n['description']) ?></td>
-            <td><?= htmlspecialchars($n['category_name']) ?></td>
-            <td><?= ucfirst(str_replace('_', ' ', $n['type'])) ?></td>
-            <td><?= htmlspecialchars($n['uploader_name'] ?? 'Unknown') ?></td>
-            <td>
-                <?php if (!empty($n['file_path']) && file_exists("../../" . $n['file_path'])): ?>
-                    <a href="../../<?= $n['file_path'] ?>" target="_blank" class="action-btn btn-view">View</a>
-                <?php else: ?>
-                    <span style="color: #ef4444; font-weight: 600;">Missing</span>
-                <?php endif; ?>
-            </td>
-            <td>
-                <span class="status-badge status-<?= $n['status'] ?>">
-                    <?= ucfirst($n['status']) ?>
-                </span>
-            </td>
-            <td><?= date('M d, Y', strtotime($n['uploaded_at'])) ?></td>
-            <td style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
-                <?php if ($n['status'] != 'approved'): ?>
-                <form method="POST" style="display:inline;">
-                    <input type="hidden" name="note_id" value="<?= $n['id'] ?>">
-                    <button type="submit" name="approve_note" class="action-btn btn-approve">✓ Approve</button>
-                </form>
-                <?php endif; ?>
-
-                <?php if ($n['status'] != 'rejected'): ?>
-                <form method="POST" style="display:inline;">
-                    <input type="hidden" name="note_id" value="<?= $n['id'] ?>">
-                    <button type="submit" name="reject_note" class="action-btn btn-reject">✕ Reject</button>
-                </form>
-                <?php endif; ?>
-
-                <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this note? This cannot be undone.');">
-                    <input type="hidden" name="note_id" value="<?= $n['id'] ?>">
-                    <button type="submit" name="delete_note" class="action-btn btn-delete">🗑 Delete</button>
-                </form>
-            </td>
-        </tr>
-        <?php endforeach; ?>
-            </table>
-        </div>
-    </div>
-</div>
-<?php include("../includes/footer.php"); ?> 
+<?php include("../includes/footer.php"); ?>

@@ -15,7 +15,7 @@ $query = "SELECT n.*, u.name AS uploader, c.name AS category_name
           FROM notes n 
           LEFT JOIN users u ON n.user_id = u.id 
           LEFT JOIN categories c ON n.category_id = c.id 
-          WHERE n.type = 'past_paper'";
+          WHERE n.type = 'question_paper' AND n.status = 'approved'";
 
 $params = [];
 
@@ -47,12 +47,7 @@ $page_title = "Browse Past Papers - Notes Platform";
 include("includes/header.php");
 ?>
 
-<!-- Back Button -->
-<div class="mb-3">
-    <a href="index.php" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left me-1"></i>Back to Home
-    </a>
-</div>
+
 
 <div class="card shadow-sm mb-4">
     <div class="card-body">
@@ -80,7 +75,7 @@ include("includes/header.php");
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-danger w-100">
+                    <button type="submit" class="btn" style="background: #14B8A6; color: white;">
                         <i class="bi bi-funnel me-1"></i>Filter
                     </button>
                 </div>
@@ -93,8 +88,8 @@ include("includes/header.php");
     <div class="row g-3">
         <?php foreach ($papers as $paper): ?>
             <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow-sm border-danger">
-                    <div class="card-header bg-danger text-white">
+                <div class="card h-100 shadow-sm" style="border-left: 4px solid #14B8A6;">
+                    <div class="card-header" style="background: #14B8A6; color: white;">
                         <i class="bi bi-archive me-1"></i>Past Paper
                     </div>
                     <div class="card-body d-flex flex-column">
@@ -107,7 +102,7 @@ include("includes/header.php");
                             <li><strong>Downloads:</strong> <?php echo $paper['downloads_count']; ?></li>
                         </ul>
                         <div class="mt-auto">
-                            <a href="download.php?id=<?php echo $paper['id']; ?>" class="btn btn-danger w-100">
+                            <a href="download.php?id=<?php echo $paper['id']; ?>" class="btn" style="background: #14B8A6; color: white; width: 100%;">
                                 <i class="bi bi-download me-1"></i>Download
                             </a>
                         </div>
@@ -119,7 +114,7 @@ include("includes/header.php");
 <?php else: ?>
     <div class="card text-center shadow-sm">
         <div class="card-body py-5">
-            <div class="text-danger mb-3">
+            <div class="text-muted mb-3">
                 <i class="bi bi-archive-x" style="font-size: 3rem;"></i>
             </div>
             <h3 class="h5">No past papers available</h3>

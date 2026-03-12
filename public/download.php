@@ -25,6 +25,12 @@ try {
         die("Note not found.");
     }
 
+    // Check if note is approved
+    if ($note['status'] !== 'approved') {
+        http_response_code(403);
+        die("This note has not been approved yet and is not available for download.");
+    }
+
     $file_path = $note["file_path"];
     $full_path = "../uploads/" . basename($file_path);
 

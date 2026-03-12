@@ -15,7 +15,7 @@ $query = "SELECT n.*, u.name AS uploader, c.name AS category_name
           FROM notes n 
           LEFT JOIN users u ON n.user_id = u.id 
           LEFT JOIN categories c ON n.category_id = c.id 
-          WHERE n.type = 'assessment'";
+          WHERE n.type = 'assessment' AND n.status = 'approved'";
 
 $params = [];
 
@@ -47,12 +47,7 @@ $page_title = "Browse Assessments - Notes Platform";
 include("includes/header.php");
 ?>
 
-<!-- Back Button -->
-<div class="mb-3">
-    <a href="index.php" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left me-1"></i>Back to Home
-    </a>
-</div>
+
 
 <div class="card shadow-sm mb-4">
     <div class="card-body">

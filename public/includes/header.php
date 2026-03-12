@@ -27,10 +27,10 @@ $prefix = ($is_admin || $is_upload) ? '../' : '';
             <div class="collapse navbar-collapse" id="mainNavbar">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo $prefix; ?>index.php">Home</a>
+                        <a class="nav-link"  style="color: white;"href="<?php echo $prefix; ?>index.php">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo $prefix; ?>view_notes.php">Browse Notes</a>
+                        <a class="nav-link"style="color: white;" href="<?php echo $prefix; ?>view_notes.php">Browse Notes</a>
                     </li>
                     <?php if (!empty($_SESSION["user_id"]) && $_SESSION["role"] === "admin"): ?>
                         <li class="nav-item">
@@ -38,26 +38,24 @@ $prefix = ($is_admin || $is_upload) ? '../' : '';
                         </li>
                     <?php endif; ?>
                 </ul>
+
+
+
                 <ul class="navbar-nav mb-2 mb-lg-0">
                     <?php if (!empty($_SESSION["user_id"])): ?>
+                        
+                        
                         <li class="nav-item">
-                            <a class="nav-link" href="<?php echo $prefix; ?>dashboard.php">Dashboard</a>
+                            <a class="btn btn-outline-light btn-sm" style="background: #000b0a; color: white;" href="<?php echo $prefix; ?>logout.php">Logout</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?php echo $prefix; ?>upload_notes.php">Upload</a>
-                        </li>
-                        <li class="nav-item d-flex align-items-center px-2 text-white-50">
-                            <small>Hello, <?php echo htmlspecialchars($_SESSION["name"]); ?></small>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-light btn-sm" href="<?php echo $prefix; ?>logout.php">Logout</a>
-                        </li>
+
+                        
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="btn btn-outline-light btn-sm me-2" href="<?php echo $prefix; ?>login.php">Login</a>
+                            <a class="btn btn-outline-light btn-sm me-2" style="background: #000b0a; color: white;" href="<?php echo $prefix; ?>login.php">Login</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="btn btn-danger btn-sm" href="<?php echo $prefix; ?>register.php">Register</a>
+                        <li class="nav-item">    
+                            <a class="btn btn-sm" style="background: #000b0a; color: white;" href="<?php echo $prefix; ?>register.php">Register</a>
                         </li>
                     <?php endif; ?>
                 </ul>
@@ -65,4 +63,4 @@ $prefix = ($is_admin || $is_upload) ? '../' : '';
         </div>
     </nav>
 
-    <main class="container my-4">
+    <main class="container my-4"> 

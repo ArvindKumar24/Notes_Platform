@@ -3,8 +3,6 @@ require_once("../config/config.php");
 require_once __DIR__ . '/includes/EmailSender.php';
 require_once __DIR__ . '/../config/smtp_config.php';
 
-// Removed incorrect email sending here
-
 $errors = [];
 $success = "";
 
@@ -120,16 +118,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if ($stmt->execute([$name, $email, $hashed_password, $role, $profilePicturePath])) {
 
-                // ✔ FIX: Send email *after* successful registration
+                // Send email after successful registration
                 try {
-                        $mailer = new EmailSender();
-                        $emailResult = $mailer->sendWelcomeEmail($email, $name, $password);
-
-                        error_log('Registration email sent to ' . $email . ': ' . json_encode($emailResult));
-                    } catch (Exception $e) {
-                        error_log('Registration email error: ' . $e->getMessage());
-                    }
-
+                    $mailer = new EmailSender();
+                    $emailResult = $mailer->sendWelcomeEmail($email, $name, $password);
+                    error_log('Registration email sent to ' . $email . ': ' . json_encode($emailResult));
+                } catch (Exception $e) {
+                    error_log('Registration email error: ' . $e->getMessage());
+                }
 
                 $_SESSION["success"] = "Registration successful! You can now login to your account.";
                 header("Location: login.php");
@@ -145,309 +141,230 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 $page_title = "Register - Notes Platform";
+include("includes/header.php");
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $page_title; ?></title>
+<style>
+    .register-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .register-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .register-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .register-header h3 {
+        color: #212529;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    .password-strength {
+        height: 4px;
+        margin-top: 5px;
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
+    .strength-weak { background-color: #F59E0B; width: 25%; }
+    .strength-fair { background-color: #38BDF8; width: 50%; }
+    .strength-good { background-color: #14B8A6; width: 75%; }
+    .strength-strong { background-color: #14B8A6; width: 100%; }
+    .password-toggle {
+        cursor: pointer;
+        position: absolute;
+        right: 12px;
+        top: 61%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+    .profile-picture-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #dee2e6;
+        display: none;
+        margin: 15px auto;
+    }
+    .profile-picture-preview.show {
+        display: block;
+    }
+    .file-input-wrapper input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .file-input-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 12px;
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    .file-input-label:hover {
+        background: #f0f0f0;
+        border-color: #adb5bd;
+    }
+    .file-input-label i {
+        margin-right: 8px;
+    }
+</style>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-
-    <style>
-        /* ALL YOUR CSS SAME AS BEFORE */
-        .hero-section {
-            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
-        }
-        .card-custom {
-            border: none;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            border-radius: 15px;
-        }
-        .btn-custom {
-            background: linear-gradient(45deg, #dc2626, #ef4444);
-            border: none;
-            border-radius: 8px;
-            padding: 12px 30px;
-            font-weight: 600;
-        }
-        .btn-custom:hover {
-            background: linear-gradient(45deg, #b91c1c, #dc2626);
-            transform: translateY(-1px);
-            box-shadow: 0 5px 15px rgba(220, 38, 38, 0.3);
-        }
-        .form-control:focus {
-            border-color: #dc2626;
-            box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.25);
-        }
-        .navbar-brand-custom {
-            font-weight: 700;
-            font-size: 1.5rem;
-        }
-        .password-strength {
-            height: 4px;
-            margin-top: 5px;
-            border-radius: 2px;
-            transition: all 0.3s ease;
-        }
-        .strength-weak { background-color: #dc3545; width: 25%; }
-        .strength-fair { background-color: #fd7e14; width: 50%; }
-        .strength-good { background-color: #ffc107; width: 75%; }
-        .strength-strong { background-color: #198754; width: 100%; }
-        .password-toggle {
-            cursor: pointer;
-            position: absolute;
-            right: 12px;
-            top: 70%;
-            transform: translateY(-50%);
-            color: #6c757d;
-        }
-        .profile-picture-preview {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #dc2626;
-            display: none;
-            margin: 15px auto;
-        }
-        .profile-picture-preview.show {
-            display: block;
-        }
-        .file-input-wrapper {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-        }
-        .file-input-wrapper input[type="file"] {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .file-input-label {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding: 12px;
-            background: #f0f0f0;
-            border: 2px dashed #dc2626;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .file-input-label:hover {
-            background: #ffe5e5;
-        }
-        .file-input-label i {
-            margin-right: 8px;
-        }
-    </style>
-</head>
-<body>
-    <!-- Header -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-        <div class="container">
-            <!-- Logo -->
-            <a class="navbar-brand d-flex align-items-center" href="index.php">
-                <div class="bg-danger rounded d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                    <span class="text-white fw-bold">N</span>
-                </div>
-                <span class="navbar-brand-custom text-dark">Notes Platform</span>
-            </a>
-
-            <!-- Mobile Toggle -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <!-- Navigation -->
-            <div class="collapse navbar-collapse" id="navbarNav" align="right"> 
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark fw-medium" href="index.php">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark fw-medium" href="view_notes.php">Notes</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark fw-medium" href="upload_notes.php">Upload</a>
-                    </li>
-                </ul>
-
-               
-            </div>
+<div class="register-container py-5">
+    <div class="register-card p-5">
+        <!-- Register Header -->
+        <div class="register-header">
+            <h3>Create Account</h3>
+            <p class="text-muted mb-0">Join our learning community</p>
         </div>
-    </nav>
 
-    <!-- Register Form Section -->
-    <section class="py-5 bg-light min-vh-100 d-flex align-items-center">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-8 col-lg-6">
-                    <div class="card card-custom">
-                        <div class="card-body p-5">
-                            <!-- Logo & Header -->
-                            <div class="text-center mb-4">
-                                <div class="bg-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                                    <i class="bi bi-journal-bookmark-fill text-white fs-4"></i>
-                                </div>
-                                <h2 class="card-title text-dark fw-bold">Create Account</h2>
-                                <p class="text-muted">Join our learning community</p>
+        <?php if (!empty($errors['general'])): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?php echo htmlspecialchars($errors['general']); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
+        <form method="POST" id="registrationForm" enctype="multipart/form-data">
+            <!-- Profile Picture Field -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Profile Picture (Optional)</label>
+                <div class="file-input-wrapper">
+                    <label for="profile_picture" class="file-input-label">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        <span>Click to upload profile picture</span>
+                    </label>
+                    <input type="file" id="profile_picture" name="profile_picture" accept="image/*" onchange="previewImage(this)">
+                </div>
+                <img id="profilePreview" class="profile-picture-preview" alt="Profile preview">
+                <small class="text-muted d-block mt-2">Max size: 5MB (JPG, PNG, GIF, WebP)</small>
+                <?php if (isset($errors['profile_picture'])): ?>
+                    <div class="alert alert-danger mt-2 mb-0">
+                        <?php echo htmlspecialchars($errors['profile_picture']); ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Name Field -->
+            <div class="mb-3">
+                <label for="name" class="form-label fw-semibold">Full Name<span class="text-danger">*</span></label>
+                <input type="text" class="form-control <?php echo isset($errors['name']) ? 'is-invalid' : ''; ?>"
+                       id="name" name="name" required
+                       value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>"
+                       placeholder="Enter your full name">
+                <?php if (isset($errors['name'])): ?>
+                    <div class="invalid-feedback d-block">
+                        <?php echo htmlspecialchars($errors['name']); ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Email Field -->
+            <div class="mb-3">
+                <label for="email" class="form-label fw-semibold">Email Address<span class="text-danger">*</span></label>
+                <input type="email" class="form-control <?php echo isset($errors['email']) ? 'is-invalid' : ''; ?>"
+                       id="email" name="email" required
+                       value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>"
+                       placeholder="Enter your email">
+                <?php if (isset($errors['email'])): ?>
+                    <div class="invalid-feedback d-block">
+                        <?php echo htmlspecialchars($errors['email']); ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="row">
+                <!-- Password Field -->
+                <div class="col-md-6">
+                    <div class="mb-3 position-relative">
+                        <label for="password" class="form-label fw-semibold">Password<span class="text-danger">*</span></label>
+                        <input type="password" class="form-control <?php echo isset($errors['password']) ? 'is-invalid' : ''; ?>"
+                               id="password" name="password" required minlength="8"
+                               placeholder="Create password">
+                        <span class="password-toggle" onclick="togglePassword('password')">
+                            <i class="bi bi-eye"></i>
+                        </span>
+                        <div id="passwordStrength" class="password-strength"></div>
+                        <?php if (isset($errors['password'])): ?>
+                            <div class="invalid-feedback d-block">
+                                <?php echo htmlspecialchars($errors['password']); ?>
                             </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
 
-                            <?php if (!empty($errors['general'])): ?>
-                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                    <?php echo htmlspecialchars($errors['general']); ?>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            <?php endif; ?>
-
-                            <form method="POST" id="registrationForm" enctype="multipart/form-data">
-                                <!-- Profile Picture Field -->
-                                <div class="mb-4 text-center">
-                                    <label class="form-label fw-semibold d-block mb-2">Profile Picture (Optional)</label>
-                                    <div class="file-input-wrapper">
-                                        <label for="profile_picture" class="file-input-label">
-                                            <i class="bi bi-cloud-arrow-up"></i>
-                                            <span>Click or drag to upload profile picture</span>
-                                        </label>
-                                        <input type="file" id="profile_picture" name="profile_picture" accept="image/*" onchange="previewImage(this)">
-                                    </div>
-                                    <img id="profilePreview" class="profile-picture-preview" alt="Profile preview">
-                                    <small class="text-muted d-block mt-2">Max size: 5MB (JPG, PNG, GIF, WebP)</small>
-                                    <?php if (isset($errors['profile_picture'])): ?>
-                                        <div class="alert alert-danger mt-2">
-                                            <?php echo htmlspecialchars($errors['profile_picture']); ?>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-
-                                <!-- Name Field -->
-                                <div class="mb-3">
-                                    <label for="name" class="form-label fw-semibold">Full Name</label>
-                                    <input type="text" class="form-control <?php echo isset($errors['name']) ? 'is-invalid' : ''; ?>" 
-                                           id="name" name="name" required 
-                                           value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>"
-                                           placeholder="Enter your full name">
-                                    <?php if (isset($errors['name'])): ?>
-                                        <div class="invalid-feedback">
-                                            <?php echo htmlspecialchars($errors['name']); ?>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-
-                                <!-- Email Field -->
-                                <div class="mb-3">
-                                    <label for="email" class="form-label fw-semibold">Email Address</label>
-                                    <input type="email" class="form-control <?php echo isset($errors['email']) ? 'is-invalid' : ''; ?>" 
-                                           id="email" name="email" required 
-                                           value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>"
-                                           placeholder="Enter your email">
-                                    <?php if (isset($errors['email'])): ?>
-                                        <div class="invalid-feedback">
-                                            <?php echo htmlspecialchars($errors['email']); ?>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-
-                                <div class="row">
-                                    <!-- Password Field -->
-                                    <div class="col-md-6">
-                                        <div class="mb-3 position-relative">
-                                            <label for="password" class="form-label fw-semibold">Password</label>
-                                            <input type="password" class="form-control <?php echo isset($errors['password']) ? 'is-invalid' : ''; ?>" 
-                                                   id="password" name="password" required minlength="8"
-                                                   placeholder="Create password">
-                                            <span class="password-toggle" onclick="togglePassword('password')">
-                                                <i class="bi bi-eye"></i>
-                                            </span>
-                                            <?php if (isset($errors['password'])): ?>
-                                                <div class="invalid-feedback">
-                                                    <?php echo htmlspecialchars($errors['password']); ?>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-
-                                    <!-- Confirm Password Field -->
-                                    <div class="col-md-6">
-                                        <div class="mb-3 position-relative">
-                                            <label for="confirm_password" class="form-label fw-semibold">Confirm Password</label>
-                                            <input type="password" class="form-control <?php echo isset($errors['confirm_password']) ? 'is-invalid' : ''; ?>" 
-                                                   id="confirm_password" name="confirm_password" required minlength="8"
-                                                   placeholder="Confirm password">
-                                            <span class="password-toggle" onclick="togglePassword('confirm_password')">
-                                                <i class="bi bi-eye"></i>
-                                            </span>
-                                            <?php if (isset($errors['confirm_password'])): ?>
-                                                <div class="invalid-feedback">
-                                                    <?php echo htmlspecialchars($errors['confirm_password']); ?>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Role Field -->
-                                <div class="mb-4">
-                                    <label for="role" class="form-label fw-semibold">I am a:</label>
-                                    <select class="form-select" id="role" name="role" required>
-                                        <option value="">Select your role</option>
-                                        <option value="student" <?php echo ($_POST['role'] ?? '') === 'student' ? 'selected' : ''; ?>>Student</option>
-                                        <option value="teacher" <?php echo ($_POST['role'] ?? '') === 'teacher' ? 'selected' : ''; ?>>Teacher</option>
-                                    </select>
-                                </div>
-
-                                <div class="d-grid mb-3">
-                                    <button type="submit" class="btn btn-custom text-white btn-lg">
-                                        <i class="bi bi-person-plus me-2"></i>Create Account
-                                    </button>
-                                </div>
-                            </form>
-
-                            <div class="text-center">
-                                <p class="text-muted mb-0">
-                                    Already have an account? 
-                                    <a href="login.php" class="text-danger text-decoration-none fw-bold">Login   here</a>
-                                </p>
+                <!-- Confirm Password Field -->
+                <div class="col-md-6">
+                    <div class="mb-3 position-relative">
+                        <label for="confirm_password" class="form-label fw-semibold">Confirm Password<span class="text-danger">*</span></label>
+                        <input type="password" class="form-control <?php echo isset($errors['confirm_password']) ? 'is-invalid' : ''; ?>"
+                               id="confirm_password" name="confirm_password" required minlength="8"
+                               placeholder="Confirm password">
+                        <span class="password-toggle" onclick="togglePassword('confirm_password')">
+                            <i class="bi bi-eye"></i>
+                        </span>
+                        <?php if (isset($errors['confirm_password'])): ?>
+                            <div class="invalid-feedback d-block">
+                                <?php echo htmlspecialchars($errors['confirm_password']); ?>
                             </div>
-                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white py-4">
-        <div class="container text-center">
-            <p class="mb-0">&copy; <?php echo date("Y"); ?> Notes Sharing Platform. All rights reserved.</p>
-        </div>
-    </footer>
+            <!-- Role Field -->
+            <div class="mb-4">
+                <label for="role" class="form-label fw-semibold">I am a:<span class="text-danger">*</span></label>
+                <select class="form-select" id="role" name="role" required>
+                    <option value="">Select your role</option>
+                    <option value="student" <?php echo ($_POST['role'] ?? '') === 'student' ? 'selected' : ''; ?>>Student</option>
+                    <option value="teacher" <?php echo ($_POST['role'] ?? '') === 'teacher' ? 'selected' : ''; ?>>Teacher</option>
+                </select>
+            </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-person-plus me-2"></i>Create Account
+                </button>
+            </div>
+        </form>
+
+        <div class="text-center">
+            <p class="text-muted mb-0">
+                Already have an account?
+                <a href="login.php" class="text-decoration-none fw-bold">Login here</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<?php include("includes/footer.php"); ?>
     <script>
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                
                 reader.onload = function(e) {
                     const preview = document.getElementById('profilePreview');
                     preview.src = e.target.result;
                     preview.classList.add('show');
                 };
-                
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        // Password strength indicator
         function checkPasswordStrength(password) {
             let strength = 0;
             const strengthBar = document.getElementById('passwordStrength');
@@ -460,23 +377,24 @@ $page_title = "Register - Notes Platform";
             
             strengthBar.className = 'password-strength';
             if (password.length === 0) {
-                strengthBar.style.width = '0%';
-                strengthBar.style.backgroundColor = 'transparent';
-            } else if (strength <= 2) {
-                strengthBar.className += ' strength-weak';
-            } else if (strength === 3) {
-                strengthBar.className += ' strength-fair';
-            } else if (strength === 4) {
-                strengthBar.className += ' strength-good';
+                strengthBar.style.display = 'none';
             } else {
-                strengthBar.className += ' strength-strong';
+                strengthBar.style.display = 'block';
+                if (strength <= 2) {
+                    strengthBar.classList.add('strength-weak');
+                } else if (strength === 3) {
+                    strengthBar.classList.add('strength-fair');
+                } else if (strength === 4) {
+                    strengthBar.classList.add('strength-good');
+                } else {
+                    strengthBar.classList.add('strength-strong');
+                }
             }
         }
 
-        // Password visibility toggle
         function togglePassword(fieldId) {
             const field = document.getElementById(fieldId);
-            const icon = field.nextElementSibling.querySelector('i');
+            const icon = field.parentElement.querySelector('i');
             
             if (field.type === 'password') {
                 field.type = 'text';
@@ -487,7 +405,6 @@ $page_title = "Register - Notes Platform";
             }
         }
 
-        // Real-time validation
         document.getElementById('password').addEventListener('input', function(e) {
             checkPasswordStrength(e.target.value);
             validatePasswordMatch();
@@ -498,74 +415,40 @@ $page_title = "Register - Notes Platform";
         function validatePasswordMatch() {
             const password = document.getElementById('password');
             const confirmPassword = document.getElementById('confirm_password');
+            const msg = confirmPassword.parentElement.querySelector('.match-error');
             
             if (password.value && confirmPassword.value && password.value !== confirmPassword.value) {
                 confirmPassword.classList.add('is-invalid');
-                let feedback = confirmPassword.nextElementSibling?.nextElementSibling;
-                if (!feedback || !feedback.classList.contains('invalid-feedback')) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    feedback.textContent = 'Passwords do not match';
-                    confirmPassword.parentNode.appendChild(feedback);
+                if (!msg) {
+                    const error = document.createElement('div');
+                    error.className = 'invalid-feedback d-block match-error';
+                    error.textContent = 'Passwords do not match';
+                    confirmPassword.parentElement.appendChild(error);
                 }
             } else {
                 confirmPassword.classList.remove('is-invalid');
-                const feedback = confirmPassword.nextElementSibling?.nextElementSibling;
-                if (feedback && feedback.classList.contains('invalid-feedback')) {
-                    feedback.remove();
-                }
+                if (msg) msg.remove();
             }
         }
 
-        // Form validation
         document.getElementById('registrationForm').addEventListener('submit', function(e) {
-            const form = e.target;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm_password').value;
             
-            if (!form.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            
-            // Additional custom validation
             if (password !== confirmPassword) {
                 e.preventDefault();
-                document.getElementById('confirm_password').classList.add('is-invalid');
-                let feedback = document.getElementById('confirm_password').nextElementSibling?.nextElementSibling;
-                if (!feedback || !feedback.classList.contains('invalid-feedback')) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    feedback.textContent = 'Passwords do not match';
-                    document.getElementById('confirm_password').parentNode.appendChild(feedback);
-                }
+                validatePasswordMatch();
             }
-            
-            form.classList.add('was-validated');
         });
 
-        // Real-time name validation
         document.getElementById('name').addEventListener('input', function(e) {
             const name = e.target.value;
             const nameRegex = /^[a-zA-Z\s\.\-']+$/;
             
             if (name && !nameRegex.test(name)) {
                 e.target.classList.add('is-invalid');
-                let feedback = e.target.nextElementSibling;
-                if (!feedback || !feedback.classList.contains('invalid-feedback')) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    feedback.textContent = 'Name can only contain letters, spaces, hyphens, and apostrophes';
-                    e.target.parentNode.appendChild(feedback);
-                }
             } else {
                 e.target.classList.remove('is-invalid');
-                const feedback = e.target.nextElementSibling;
-                if (feedback && feedback.classList.contains('invalid-feedback')) {
-                    feedback.remove();
-                }
             }
         });
     </script>
-</body>
-</html>

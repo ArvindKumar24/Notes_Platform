@@ -87,22 +87,6 @@ CREATE TABLE `downloads_log` (
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_0900_ai_ci;
 
--- =========================
--- ANNOUNCEMENTS TABLE
--- =========================
-CREATE TABLE `announcements` (
-    `id` INT NOT NULL AUTO_INCREMENT,
-    `title` VARCHAR(255) NOT NULL,
-    `message` TEXT NOT NULL,
-    `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    `created_by` INT DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    KEY `created_by` (`created_by`),
-    CONSTRAINT `announcements_ibfk_1`
-        FOREIGN KEY (`created_by`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB
-DEFAULT CHARSET=utf8mb4
-COLLATE=utf8mb4_0900_ai_ci;
 INSERT INTO users (name, email, password, role) VALUES 
 ('Admin', 'notesshare@edu.in', 'NotesShare', 'admin');
 -- Add password reset token columns to users table
