@@ -1,18 +1,18 @@
 <?php
 require_once("../config/config.php");
 
-// Fetch stats
-$total_notes = $pdo->query("SELECT COUNT(*) FROM notes WHERE status = 'approved'")->fetchColumn();
+// Fetch stats - only approved notes and papers (not assessments)
+$total_notes = $pdo->query("SELECT COUNT(*) FROM notes WHERE status = 'approved' AND type IN ('note', 'question_paper')")->fetchColumn();
 $total_users = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
-$total_downloads = $pdo->query("SELECT COALESCE(SUM(downloads_count),0) FROM notes WHERE status = 'approved'")->fetchColumn();
+$total_downloads = $pdo->query("SELECT COALESCE(SUM(downloads_count),0) FROM notes WHERE status = 'approved' AND type IN ('note', 'question_paper')")->fetchColumn();
 
-// Recent notes
+// Recent notes and papers (not assessments)
 $recent_notes = $pdo->query("
     SELECT n.*, c.name AS category_name, u.name AS uploader_name
     FROM notes n
     LEFT JOIN categories c ON n.category_id = c.id
     LEFT JOIN users u ON n.user_id = u.id
-    WHERE n.status = 'approved'
+    WHERE n.status = 'approved' AND n.type IN ('note', 'question_paper')
     ORDER BY n.uploaded_at DESC
     LIMIT 6
 ")->fetchAll(PDO::FETCH_ASSOC);
@@ -39,6 +39,7 @@ include("includes/header.php");
 .note-thumbnail.pdf { background:linear-gradient(135deg,#38BDF8,#0284C7); }
 .note-thumbnail.doc { background:linear-gradient(135deg,#38BDF8,#06B6D4); }
 .note-thumbnail.image { background:linear-gradient(135deg,#43e97b,#38f9d7); }
+.note-thumbnail.paper { background:linear-gradient(135deg,#F59E0B,#D97706); }
 
 .note-thumbnail img { width:100%;height:100%;object-fit:cover; }
 
@@ -52,9 +53,12 @@ include("includes/header.php");
 .note-content { padding:1.2rem;flex:1;display:flex;flex-direction:column; }
 
 .note-type-badge {
-    background:#fee2e2;color:#991b1b;
     padding:3px 8px;border-radius:6px;font-size:.75rem;font-weight:600;margin-bottom:.6rem;
+    display: inline-block;
+    width: fit-content;
 }
+.note-type-badge.note { background:#DBEAFE;color:#1E40AF; }
+.note-type-badge.paper { background:#FEF3C7;color:#D97706; }
 
 .note-title {
     font-size:1rem;font-weight:600;margin-bottom:.4rem;
@@ -114,7 +118,7 @@ include("includes/header.php");
 
 <div class="rounded-4 p-5 text-center shadow-sm" style="background: #14B8A6; color: white;">
     <h1 class="display-5 fw-bold mb-2">Share Knowledge, Grow Together</h1>
-    <p class="lead mx-auto mb-4" style="max-width:640px">A platform for students and teachers to share academic notes.</p>
+    <p class="lead mx-auto mb-4" style="max-width:640px">A platform for students and teachers to share academic notes and past papers.</p>
     <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
         <a href="upload_notes.php" class="btn btn-light btn-lg"><i class="bi bi-upload me-2"></i>Upload Notes</a>
         <a href="view_notes.php" class="btn btn-outline-light btn-lg"><i class="bi bi-search me-2"></i>Browse Notes</a>
@@ -137,10 +141,10 @@ include("includes/header.php");
     </div>
 </section>
 
-<!-- Recent Notes -->
+<!-- Recent Notes & Papers Section -->
 <section class="my-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <div><h2 class="h4 mb-1">📚 Recent Notes</h2><p class="text-muted small mb-0">Latest study resources</p></div>
+        <div><h2 class="h4 mb-1">📚 Recent Study Materials</h2><p class="text-muted small mb-0">Latest notes and past papers from the community</p></div>
         <a href="view_notes.php" class="btn btn-outline-danger btn-sm">View All →</a>
     </div>
 
@@ -156,8 +160,12 @@ include("includes/header.php");
                 'pdf'=>'📄','txt'=>'📝','doc'=>'📋','docx'=>'📋',
                 'jpg'=>'🖼️','jpeg'=>'🖼️','png'=>'🖼️','gif'=>'🖼️'
             ];
-            $typeClass = $classes[$ext] ?? 'doc';
-            $icon = $icons[$ext] ?? '📦';
+            $typeClass = $classes[$ext] ?? ($note['type'] === 'question_paper' ? 'paper' : 'doc');
+            $icon = $icons[$ext] ?? ($note['type'] === 'question_paper' ? '📜' : '📦');
+            
+            // Set display type name
+            $displayType = $note['type'] === 'question_paper' ? 'Past Paper' : 'Note';
+            $typeBadgeClass = $note['type'] === 'question_paper' ? 'paper' : 'note';
         ?>
         <div class="col-md-6 col-lg-4">
             <div class="note-card">
@@ -168,7 +176,7 @@ include("includes/header.php");
                 </div>
 
                 <div class="note-content">
-                    <span class="note-type-badge"><?= ucfirst(str_replace('_',' ',$note['type'])) ?></span>
+                    <span class="note-type-badge <?= $typeBadgeClass ?>"><?= $displayType ?></span>
 
                     <h3 class="note-title"><?= htmlspecialchars($note["title"]) ?></h3>
 
@@ -201,9 +209,9 @@ include("includes/header.php");
     <?php else: ?>
     <div class="card text-center shadow-sm border-0 py-5">
         <div style="font-size:3rem;">📭</div>
-        <h5 class="mt-3">No notes yet</h5>
-        <p class="text-muted">Be the first to upload.</p>
-        <a href="upload_notes.php" class="btn" style="background: #14B8A6; color: white;">Upload Note</a>
+        <h5 class="mt-3">No study materials yet</h5>
+        <p class="text-muted">Be the first to share notes or past papers.</p>
+        <a href="upload_notes.php" class="btn" style="background: #14B8A6; color: white;">Upload Study Material</a>
     </div>
     <?php endif; ?>
 </section>

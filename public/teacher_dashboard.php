@@ -9,7 +9,17 @@ if (empty($_SESSION["user_id"]) || $_SESSION["role"] !== "teacher") {
 $userId = (int) $_SESSION["user_id"];
 $userName = $_SESSION["name"] ?? $_SESSION["username"] ?? "Teacher";
 
-// Get user profile information
+
+$pendingStmt = $pdo->prepare("
+    SELECT COUNT(*) 
+    FROM student_submissions ss
+    INNER JOIN notes n ON n.id = ss.assessment_id
+    WHERE n.user_id = ? AND ss.status = 'pending'
+");
+$pendingStmt->execute([$userId]);
+$pendingCount = $pendingStmt->fetchColumn();
+
+
 $profileStmt = $pdo->prepare("SELECT id, name, email, role, created_at, profile_picture FROM users WHERE id = ?");
 $profileStmt->execute([$userId]);
 $userProfile = $profileStmt->fetch(PDO::FETCH_ASSOC) ?: ['name' => 'Teacher', 'email' => '', 'role' => 'teacher', 'created_at' => date('Y-m-d'), 'profile_picture' => null];
@@ -78,16 +88,13 @@ include("includes/header.php");
         <div class="profile-content">
             <div class="profile-avatar">
                 <?php 
-                $profilePicPath = null;
                 if (!empty($userProfile['profile_picture'])) {
-                    if (strpos($userProfile['profile_picture'], 'uploads/profiles/') === 0) {
-                        $profilePicPath = '../' . $userProfile['profile_picture'];
-                    } else {
-                        $profilePicPath = $userProfile['profile_picture'];
-                    }
+                    $fileName = $userProfile['profile_picture'];
+                    $serverPath = __DIR__ . '/profile_pictures/' . $fileName;
+                    $imgPath = 'profile_pictures/' . htmlspecialchars($fileName);
                     
-                    if (file_exists($profilePicPath)) {
-                        echo '<img src="' . htmlspecialchars($profilePicPath) . '" alt="Profile Picture" class="profile-pic">';
+                    if (file_exists($serverPath)) {
+                        echo '<img src="' . $imgPath . '" alt="Profile Picture" class="profile-pic">';
                     } else {
                         echo '<div class="profile-pic-placeholder"><i class="bi bi-person-fill"></i></div>';
                     }
@@ -163,15 +170,29 @@ include("includes/header.php");
                     <tbody>
                         <?php foreach ($myNotes as $note): ?>
                             <tr>
-                                <td class="title-cell"><?php echo htmlspecialchars($note["title"]); ?></td>
-                                <td class="category-cell"><?php echo ucfirst(str_replace('_', ' ', $note["type"])); ?></td>
+                                <td class="title-cell">
+                                    <?php echo htmlspecialchars($note["title"]); ?>
+                                </td>
+                                <td class="category-cell">
+                                    <span class="type-badge type-<?php echo $note["type"]; ?>">
+                                        <?php echo ucfirst(str_replace('_', ' ', $note["type"])); ?>
+                                    </span>
+                                </td>
                                 <td class="category-cell"><?php echo htmlspecialchars($note["category_name"] ?? "Uncategorized"); ?></td>
                                 <td class="date-cell"><?php echo date("M d, Y", strtotime($note["uploaded_at"])); ?></td>
                                 <td class="downloads-cell"><?php echo (int)$note["downloads_count"]; ?></td>
                                 <td class="action-cell">
-                                    <a href="download.php?id=<?php echo $note["id"]; ?>" class="btn-download-table">
+                                    <a href="download.php?id=<?php echo $note["id"]; ?>" class="btn-download-table" title="Download">
                                         <i class="bi bi-download"></i>
                                     </a>
+                                    <?php if ($note["type"] === 'assessment'): ?>
+                                        <a href="delete_assessment.php?id=<?php echo $note["id"]; ?>" 
+                                           class="btn-delete-table" 
+                                           title="Delete Assessment"
+                                           onclick="return confirm('⚠️ WARNING: Are you sure you want to delete this assessment?\n\nThis action cannot be undone.\nStudents who have already submitted will be affected.\n\nClick OK to delete, Cancel to keep.');">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -185,9 +206,7 @@ include("includes/header.php");
             </div>
         <?php endif; ?>
     </div>
-</div>
-
-<!-- Content Grid Section -->
+</div><!-- Content Grid Section -->
 <div class="content-grid">
     <!-- Student Uploads Section -->
     <div class="fellow-students-section">
@@ -222,6 +241,22 @@ include("includes/header.php");
 
     <!-- Quick Access Cards -->
     <div class="quick-access-section">
+        <!-- Review Submissions Card - NEW ADDED CARD -->
+        <div class="quick-card review-card">
+            <div class="card-header" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);">
+                <i class="bi bi-journal-check me-2"></i>Review Submissions
+                <?php if ($pendingCount > 0): ?>
+                    <span class="badge bg-white text-warning float-end" style="font-size: 0.75rem;"><?= $pendingCount ?> new</span>
+                <?php endif; ?>
+            </div>
+            <div class="card-body">
+                <p>Review and grade assessments submitted by your students.</p>
+                <a href="review_submissions.php" class="btn-card-action" style="color: #F59E0B;">
+                    Go to Reviews →
+                </a>
+            </div>
+        </div>
+
         <div class="quick-card papers-card">
             <div class="card-header">
                 <i class="bi bi-archive me-2"></i>Past Papers
@@ -249,7 +284,7 @@ include("includes/header.php");
 </div>
 
 <style>
-/* Dashboard Styles - Shared with Student Dashboard */
+
 .welcome-header {
     display: flex;
     justify-content: space-between;
@@ -284,7 +319,7 @@ include("includes/header.php");
     flex-wrap: wrap;
 }
 
-/* Profile & Stats Section */
+
 .profile-stats-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -449,7 +484,7 @@ include("includes/header.php");
     margin: 0.25rem 0 0 0;
 }
 
-/* Recent Uploads Section */
+
 .recent-uploads-section {
     background: white;
     border-radius: 12px;
@@ -582,7 +617,7 @@ include("includes/header.php");
     margin-bottom: 1rem;
 }
 
-/* Content Grid */
+
 .content-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -649,7 +684,7 @@ include("includes/header.php");
     margin-right: 0.35rem;
 }
 
-/* Quick Cards */
+
 .quick-card {
     background: white;
     border-radius: 12px;
@@ -670,6 +705,7 @@ include("includes/header.php");
     color: white;
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 .papers-card .card-header {
@@ -678,6 +714,10 @@ include("includes/header.php");
 
 .notes-card .card-header {
     background: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%);
+}
+
+.review-card .card-header {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
 }
 
 .quick-card .card-body {
@@ -704,7 +744,7 @@ include("includes/header.php");
     transform: translateX(4px);
 }
 
-/* Responsive Design */
+
 @media (max-width: 1024px) {
     .content-grid {
         grid-template-columns: 1fr;
@@ -764,7 +804,125 @@ include("includes/header.php");
         overflow-x: auto;
     }
 }
+
+.badge-assessment-tag {
+    display: inline-block;
+    background: #FEF3C7;
+    color: #D97706;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+
+.type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.type-note {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.type-assessment {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.type-past_paper {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+
+.action-cell {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.btn-download-table {
+    padding: 0.5rem 0.75rem;
+    background: #14B8A6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.btn-download-table:hover {
+    background: #0d9488;
+    transform: scale(1.05);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-delete-table {
+    padding: 0.5rem 0.75rem;
+    background: #F59E0B;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.btn-delete-table:hover {
+    background: #D97706;
+    transform: scale(1.05);
+    color: white;
+    text-decoration: none;
+}
+
+
+@media (max-width: 768px) {
+    .action-cell {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+    
+    .btn-download-table, 
+    .btn-delete-table {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .badge-assessment-tag {
+        display: block;
+        margin-top: 0.25rem;
+        text-align: center;
+        width: fit-content;
+    }
+    
+    .title-cell {
+        vertical-align: middle;
+    }
+}
+
+@media (max-width: 480px) {
+    .type-badge {
+        display: block;
+        text-align: center;
+        width: 100%;
+        margin-top: 0.25rem;
+    }
+}
 </style>
 
 <?php include("includes/footer.php"); ?>
-       

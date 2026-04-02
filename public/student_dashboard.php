@@ -88,16 +88,13 @@ include("includes/header.php");
         <div class="profile-content">
             <div class="profile-avatar">
                 <?php 
-                $profilePicPath = null;
                 if (!empty($userProfile['profile_picture'])) {
-                    if (strpos($userProfile['profile_picture'], 'uploads/profiles/') === 0) {
-                        $profilePicPath = '../' . $userProfile['profile_picture'];
-                    } else {
-                        $profilePicPath = $userProfile['profile_picture'];
-                    }
+                    $fileName = $userProfile['profile_picture'];
+                    $serverPath = __DIR__ . '/profile_pictures/' . $fileName;
+                    $imgPath = 'profile_pictures/' . htmlspecialchars($fileName);
                     
-                    if (file_exists($profilePicPath)) {
-                        echo '<img src="' . htmlspecialchars($profilePicPath) . '" alt="Profile Picture" class="profile-pic">';
+                    if (file_exists($serverPath)) {
+                        echo '<img src="' . $imgPath . '" alt="Profile Picture" class="profile-pic">';
                     } else {
                         echo '<div class="profile-pic-placeholder"><i class="bi bi-person-fill"></i></div>';
                     }

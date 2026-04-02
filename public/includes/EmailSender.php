@@ -85,19 +85,19 @@ class EmailSender
        Existing Emails
     ---------------------------------------- */
 
-   public function sendWelcomeEmail($email, $name, $password)
-{
-    $body = "
-        <h3>Welcome to Notes Platform</h3>
-        <p>Hi $name,</p>
-        <p>Your account has been created successfully. Here are your login details:</p>
-        <p><strong>Username:</strong> $email<br>
-        <strong>Password:</strong> $password</p>
-        <p>Please keep this information safe.</p>
-    ";
+    public function sendWelcomeEmail($email, $name, $password)
+    {
+        $body = "
+            <h3>Welcome to Notes Platform</h3>
+            <p>Hi $name,</p>
+            <p>Your account has been created successfully. Here are your login details:</p>
+            <p><strong>Username:</strong> $email<br>
+            <strong>Password:</strong> $password</p>
+            <p>Please keep this information safe.</p>
+        ";
 
-    return $this->sendEmail($email, "Welcome to Notes Platform", $body);
-}
+        return $this->sendEmail($email, "Welcome to Notes Platform", $body);
+    }
 
     public function sendPasswordResetEmail($email, $name, $token)
     {
@@ -116,7 +116,6 @@ class EmailSender
        NEW EMAIL EVENTS
     ---------------------------------------- */
 
-    // 1. Notify all users when any user uploads new notes
     public function sendNewNotesNotification($emails, $noteTitle, $uploadedBy)
     {
         $subject = "New Notes Uploaded – $noteTitle";
@@ -131,7 +130,6 @@ class EmailSender
         }
     }
 
-    // 2. Notify teacher uploads (notes/papers/assessments)
     public function sendTeacherUploadNotification($email, $name, $noteTitle, $type)
     {
         $typeName = ucfirst($type);
@@ -147,41 +145,41 @@ class EmailSender
     }
 
     public function sendNewAssessmentNotification($email, $teacherName, $title)
-{
-    $body = "
-        <h3>New Assessment Uploaded</h3>
-        <p><strong>$teacherName</strong> uploaded a new assessment:</p>
-        <p><strong>$title</strong></p>
-        <p>Login to view or download it.</p>
-    ";
-
-    return $this->sendEmail($email, "New Assessment Uploaded", $body);
-}
-public function sendNewQuestionPaperNotification($email, $teacherName, $title)
-{
-    $body = "
-        <h3>New Question Paper Uploaded</h3>
-        <p><strong>$teacherName</strong> uploaded a new question paper:</p>
-        <p><strong>$title</strong></p>
-        <p>Login to view or download it.</p>
-    ";
-
-    return $this->sendEmail($email, "New Question Paper Uploaded", $body);
-}
-
-    // 3. Admin Approves Notes
-    public function sendAdminApprovalEmail($email, $name, $noteTitle)
     {
         $body = "
-            <h3>Your Notes Have Been Approved</h3>
-            <p>Hi $name,</p>
-            <p>Your notes titled <strong>$noteTitle</strong> have been approved by the admin.</p>
+            <h3>New Assessment Uploaded</h3>
+            <p><strong>$teacherName</strong> uploaded a new assessment:</p>
+            <p><strong>$title</strong></p>
+            <p>Login to view or download it.</p>
         ";
 
-        return $this->sendEmail($email, "Notes Approved", $body);
+        return $this->sendEmail($email, "New Assessment Uploaded", $body);
     }
 
-    // 4. Admin Rejects Notes
+    public function sendNewQuestionPaperNotification($email, $teacherName, $title)
+    {
+        $body = "
+            <h3>New Question Paper Uploaded</h3>
+            <p><strong>$teacherName</strong> uploaded a new question paper:</p>
+            <p><strong>$title</strong></p>
+            <p>Login to view or download it.</p>
+        ";
+
+        return $this->sendEmail($email, "New Question Paper Uploaded", $body);
+    }
+
+   public function sendAdminApprovalEmail($email, $name, $title, $type = 'notes')
+    {
+    $typeName = ucfirst(str_replace('_', ' ', $type));
+
+    $body = "
+        <h3>Your {$typeName} Has Been Approved</h3>
+        <p>Hi $name,</p>
+        <p>Your <strong>{$typeName}</strong> titled <strong>$title</strong> has been approved by the admin.</p>
+    ";
+
+    return $this->sendEmail($email, "{$typeName} Approved", $body);
+   }
     public function sendAdminRejectionEmail($email, $name, $noteTitle)
     {
         $body = "
@@ -193,7 +191,6 @@ public function sendNewQuestionPaperNotification($email, $teacherName, $title)
         return $this->sendEmail($email, "Notes Rejected", $body);
     }
 
-    // 5. Admin Deletes Notes
     public function sendAdminDeletionEmail($email, $name, $noteTitle)
     {
         $body = "
@@ -205,7 +202,6 @@ public function sendNewQuestionPaperNotification($email, $teacherName, $title)
         return $this->sendEmail($email, "Notes Deleted", $body);
     }
 
-    // 6. Admin creates a new user
     public function sendAdminCreatedUserEmail($email, $name, $username, $password)
     {
         $body = "
@@ -217,5 +213,52 @@ public function sendNewQuestionPaperNotification($email, $teacherName, $title)
         ";
 
         return $this->sendEmail($email, "Your Account Details", $body);
+    }
+
+    /* ----------------------------------------
+       NEW: Assessment Review Email
+    ---------------------------------------- */
+
+    public function sendSubmissionReviewedEmail($studentEmail, $studentName, $assessmentTitle, $status, $remarks = '')
+    {
+        $statusText = $status === 'approved' ? 'Approved' : 'Rejected';
+        $statusColor = $status === 'approved' ? '#10B981' : '#EF4444';
+        $statusMessage = $status === 'approved' 
+            ? 'Your submission has been approved! Great work!'
+            : 'Your submission has been reviewed and needs improvement.';
+
+        $body = "
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                <div style='background: linear-gradient(135deg, #14B8A6, #0d9488); padding: 20px; text-align: center; border-radius: 12px 12px 0 0;'>
+                    <h2 style='color: white;'>Assessment Review Result</h2>
+                </div>
+                <div style='background: white; padding: 25px; border: 1px solid #e2e8f0; border-top: none;'>
+                    <p>Hello <strong>" . htmlspecialchars($studentName) . "</strong>,</p>
+                    <p>Your submission for <strong>" . htmlspecialchars($assessmentTitle) . "</strong> has been reviewed.</p>
+
+                    <div style='text-align:center; margin:20px 0;'>
+                        <span style='background: {$statusColor}; color:white; padding:8px 20px; border-radius:20px;'>
+                            {$statusText}
+                        </span>
+                        <p>{$statusMessage}</p>
+                    </div>";
+
+        if (!empty($remarks)) {
+            $body .= "
+                <div style='background:#fef3c7; padding:10px;'>
+                    <strong>Teacher's Remarks:</strong>
+                    <p>" . nl2br(htmlspecialchars($remarks)) . "</p>
+                </div>";
+        }
+
+        $body .= "
+                    <p style='text-align:center;'>
+                        <a href='" . BASE_URL . "/public/view_assessments.php'>View Assessments</a>
+                    </p>
+                </div>
+            </div>
+        ";
+
+        return $this->sendEmail($studentEmail, "Assessment Result: {$statusText}", $body);
     }
 }

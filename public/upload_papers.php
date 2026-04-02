@@ -159,7 +159,7 @@ include("includes/header.php");
 
                 <form method="POST" enctype="multipart/form-data">
                     <div class="mb-3">
-                        <label class="form-label">Title</label>
+                        <label class="form-label">Title <span style="color: red;">*</span></label>
                         <input type="text" name="title" class="form-control" placeholder="e.g. Final Exam 2023" required>
                     </div>
 
@@ -169,7 +169,7 @@ include("includes/header.php");
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Category</label>
+                        <label class="form-label">Category <span style="color: red;">*</span></label>
                         <select name="category_id" class="form-select" required>
                             <option value="">Select category</option>
                             <?php foreach ($categories as $cat): ?>
@@ -179,7 +179,7 @@ include("includes/header.php");
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label">File</label>
+                        <label class="form-label">File <span style="color: red;">*</span></label>
                         <input type="file" name="file" class="form-control" accept=".pdf,.docx" required>
                         <div class="form-text">Accepts PDF or DOCX files up to 5MB.</div>
                     </div>

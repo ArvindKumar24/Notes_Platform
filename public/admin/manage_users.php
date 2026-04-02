@@ -88,36 +88,62 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
     }
 }
 
-// Handle role update
-if (isset($_POST['change_role'])) {
-    try {
-        $userId = (int)$_POST['user_id'];
-        $newRole = $_POST['role'];
-
-        if (!in_array($newRole, ['student', 'teacher', 'admin'])) {
-            throw new Exception("Invalid role.");
-        }
-
-        $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
-        $stmt->execute([$newRole, $userId]);
-        $message = "User role updated successfully!";
-        $messageType = "success";
-    } catch (Exception $e) {
-        $message = $e->getMessage();
-        $messageType = "danger";
-    }
-}
+// Role update functionality removed
 
 // Handle user delete
 if (isset($_POST['delete_user'])) {
     try {
         $userId = (int)$_POST['user_id'];
+        
+        // Start transaction to ensure all deletions are atomic
+        $pdo->beginTransaction();
+        
+        // Get all note IDs for this user to delete files later
+        $notesStmt = $pdo->prepare("SELECT id, file_path FROM notes WHERE user_id = ?");
+        $notesStmt->execute([$userId]);
+        $notes = $notesStmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Get all note IDs for cascading deletes
+        $noteIds = array_column($notes, 'id');
+        
+        // Delete downloads_log entries for notes uploaded by this user
+        if (!empty($noteIds)) {
+            $placeholders = implode(',', array_fill(0, count($noteIds), '?'));
+            $stmt = $pdo->prepare("DELETE FROM downloads_log WHERE note_id IN ($placeholders)");
+            $stmt->execute($noteIds);
+            
+            // Delete downloads entries for notes uploaded by this user
+            $stmt = $pdo->prepare("DELETE FROM downloads WHERE note_id IN ($placeholders)");
+            $stmt->execute($noteIds);
+        }
+        
+        // Delete all notes uploaded by this user
+        $stmt = $pdo->prepare("DELETE FROM notes WHERE user_id = ?");
+        $stmt->execute([$userId]);
+        
+        // Delete the user
         $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
         $stmt->execute([$userId]);
-        $message = "User deleted successfully!";
+        
+        // Commit transaction
+        $pdo->commit();
+        
+        // Delete uploaded files from the file system
+        foreach ($notes as $note) {
+            $filePath = __DIR__ . '/../../uploads/' . $note['file_path'];
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
+        
+        $message = "User and all their uploaded notes have been deleted successfully!";
         $messageType = "success";
     } catch (Exception $e) {
-        $message = $e->getMessage();
+        // Rollback transaction on error
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        $message = "Error deleting user: " . $e->getMessage();
         $messageType = "danger";
     }
 }
@@ -184,16 +210,9 @@ include("./header.php");
                                     </td>
                                     <td><?php echo htmlspecialchars($u['email']); ?></td>
                                     <td>
-                                        <form method="POST" style="display:inline;">
-                                            <input type="hidden" name="user_id" value="<?php echo $u['id']; ?>">
-                                            <select name="role" class="form-select form-select-sm"
-                                                onchange="this.form.submit();" style="width: auto;">
-                                                <option value="student" <?php echo $u['role'] === 'student' ? 'selected' : ''; ?>>Student</option>
-                                                <option value="teacher" <?php echo $u['role'] === 'teacher' ? 'selected' : ''; ?>>Teacher</option>
-                                                <option value="admin" <?php echo $u['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                                            </select>
-                                            <button type="submit" name="change_role" style="display: none;"></button>
-                                        </form>
+                                        <span class="badge" style="background: <?php echo $u['role'] === 'admin' ? '#EF4444' : ($u['role'] === 'teacher' ? '#3B82F6' : '#10B981'); ?>">
+                                            <?php echo ucfirst(htmlspecialchars($u['role'])); ?>
+                                        </span>
                                     </td>
                                     <td>
                                         <small><?php echo date('M d, Y', strtotime($u['created_at'])); ?></small>

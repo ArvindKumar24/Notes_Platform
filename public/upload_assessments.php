@@ -1,6 +1,6 @@
 <?php
 require_once("../config/config.php");
-require_once("includes/EmailSender.php"); // ADD THIS
+require_once("includes/EmailSender.php");
 
 if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "teacher") {
     header("Location: login.php");
@@ -10,194 +10,181 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "teacher") {
 $message = "";
 $message_type = "danger";
 
+// Predefined courses
+$courses = [
+    'BscIT',
+    'BMS', 
+    'Bcom',
+    'BA Psychology',
+    'MscIT',
+    'BCA',
+    
+];
+
+$categories = $pdo->query("SELECT * FROM categories ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     try {
         $title = trim($_POST["title"] ?? '');
         $description = trim($_POST["description"] ?? '');
         $category_id = isset($_POST["category_id"]) ? (int)$_POST["category_id"] : 0;
+        $course = trim($_POST["course"] ?? '');
 
         // Validation
         if (empty($title)) {
             $message = "Title is required.";
         } elseif (strlen($title) < 3) {
-            $message = "Title must be at least 3 characters long.";
+            $message = "Title must be at least 3 characters.";
         } elseif (strlen($title) > 255) {
             $message = "Title must not exceed 255 characters.";
         } elseif ($category_id <= 0) {
             $message = "Please select a valid category.";
+        } elseif (empty($course)) {
+            $message = "Please select the course this assessment belongs to.";
         } elseif (!isset($_FILES["file"]) || $_FILES["file"]["error"] !== 0) {
             $message = "File upload error. Please try again.";
         } else {
             $allowed = ["pdf", "docx"];
             $filename = $_FILES["file"]["name"];
             $filesize = $_FILES["file"]["size"];
-            $max_size = 1024 * 1024 * 1024;
-
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
             if (!in_array($ext, $allowed)) {
                 $message = "Only PDF and DOCX files are allowed.";
-            } elseif ($filesize > $max_size) {
-                $message = "File size must not exceed 1GB.";
-            } elseif ($filesize <= 0) {
-                $message = "File is empty.";
+            } elseif ($filesize > 100 * 1024 * 1024) {
+                $message = "File size must not exceed 100 MB.";
             } else {
-
-                // Generate safe filename
                 $new_filename = uniqid() . "_" . preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
                 $destination = "../uploads/" . $new_filename;
 
-                if (!is_dir("../uploads")) {
-                    @mkdir("../uploads", 0777, true);
-                }
+                if (!is_dir("../uploads")) @mkdir("../uploads", 0777, true);
 
                 if (move_uploaded_file($_FILES["file"]["tmp_name"], $destination)) {
 
-                    // Save in database
+                    // Insert into notes with course and status = 'approved'
                     $stmt = $pdo->prepare("
-                        INSERT INTO notes 
-                        (title, description, category_id, type, file_path, user_id, uploaded_at) 
-                        VALUES (?, ?, ?, 'assessment', ?, ?, NOW())
+                        INSERT INTO notes
+                            (title, description, category_id, course, type, file_path, user_id, uploaded_at, status)
+                        VALUES (?, ?, ?, ?, 'assessment', ?, ?, NOW(), 'approved')
                     ");
-                    $stmt->execute([$title, $description, $category_id, $new_filename, $_SESSION["user_id"]]);
+                    $stmt->execute([$title, $description, $category_id, $course, $new_filename, $_SESSION["user_id"]]);
 
                     $message = "Assessment uploaded successfully!";
                     $message_type = "success";
 
-                    // -----------------------------------------
-                    // EMAIL NOTIFICATION SECTION START
-                    // -----------------------------------------
-
+                    // Email notifications
+                    try {
                         $mailer = new EmailSender();
+                        $uploaderId = (int)$_SESSION["user_id"];
 
-                        $uploaderId = $_SESSION["user_id"];
+                        $uploaderRow = $pdo->prepare("SELECT name, email FROM users WHERE id = ?");
+                        $uploaderRow->execute([$uploaderId]);
+                        $uploader = $uploaderRow->fetch(PDO::FETCH_ASSOC);
 
-                        // Fetch uploader details
-                        $uploaderQuery = $pdo->prepare("SELECT name, email FROM users WHERE id = ?");
-                        $uploaderQuery->execute([$uploaderId]);
-                        $uploader = $uploaderQuery->fetch(PDO::FETCH_ASSOC);
-
-                        $uploaderName = $uploader["name"];
-                        $uploaderEmail = $uploader["email"];
-
-                        /* 1️⃣ Notify ONLY the uploader */
-                        $mailer->sendTeacherUploadNotification(
-                            $uploaderEmail,
-                            $uploaderName,
-                            $title,
-                            "assessment"
-                        );
-
-                        /* 2️⃣ Notify all other teachers + all students */
-                        $othersQuery = $pdo->prepare("
-                            SELECT email FROM users 
-                            WHERE id != ? AND role IN ('teacher','student')
-                        ");
-                        $othersQuery->execute([$uploaderId]);
-
-                        $otherEmails = $othersQuery->fetchAll(PDO::FETCH_COLUMN);
-
-                        foreach ($otherEmails as $email) {
-                            $mailer->sendNewAssessmentNotification(
-                                $email,
-                                $uploaderName,
-                                $title
+                        if ($uploader) {
+                            $mailer->sendTeacherUploadNotification(
+                                $uploader["email"], 
+                                $uploader["name"], 
+                                $title, 
+                                "assessment"
                             );
+
+                            // Notify students enrolled in this course
+                            $studentsStmt = $pdo->prepare("
+                                SELECT email, name FROM users 
+                                WHERE role = 'student' AND course = ?
+                            ");
+                            $studentsStmt->execute([$course]);
+                            $students = $studentsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+                            foreach ($students as $student) {
+                                $mailer->sendNewAssessmentNotification(
+                                    $student['email'],
+                                    $uploader["name"],
+                                    $title
+                                );
+                            }
                         }
-                    // -----------------------------------------
-                    // EMAIL NOTIFICATION SECTION END
-                    // -----------------------------------------
+                    } catch (Exception $e) {
+                        error_log("Email error: " . $e->getMessage());
+                    }
 
                 } else {
-                    $message = "Could not upload file. Please try again.";
+                    $message = "Could not save file.";
                 }
             }
         }
     } catch (PDOException $e) {
-        $message = "Database error: Please contact support.";
-        error_log("Database error in upload_assessments.php: " . $e->getMessage());
-    } catch (Exception $e) {
-        $message = "An unexpected error occurred.";
-        error_log("Error in upload_assessments.php: " . $e->getMessage());
+        $message = "Database error.";
+        error_log("upload_assessments.php DB error: " . $e->getMessage());
     }
 }
 
-$categories = $pdo->query("SELECT * FROM categories ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
-$page_title = "Upload Assessments - Notes Platform";
+$page_title = "Upload Assessment";
 include("includes/header.php");
 ?>
-
-
 
 <div class="row justify-content-center">
     <div class="col-lg-7">
         <div class="card shadow-sm">
             <div class="card-body p-4">
                 <h1 class="h4 mb-2">Upload Assessment</h1>
-                <p class="text-muted mb-4">Share quizzes, tests, and assignments with your students.</p>
+                <p class="text-muted mb-4">Share quizzes, tests, and assignments with students.</p>
 
                 <?php if ($message): ?>
-                    <div class="alert alert-<?php echo $message_type; ?> alert-dismissible fade show" role="alert">
-                        <?php echo htmlspecialchars($message); ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <div class="alert alert-<?= $message_type ?>">
+                        <?= htmlspecialchars($message) ?>
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <form method="POST" enctype="multipart/form-data">
                     <div class="mb-3">
-                        <label class="form-label">Title</label>
-                        <input type="text" name="title" class="form-control" placeholder="e.g. Midterm Assessment" required>
+                        <label class="form-label">Title <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control" rows="3" placeholder="Add helpful details for your students"></textarea>
+                        <textarea name="description" class="form-control" rows="3"></textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Category</label>
+                        <label class="form-label">Category <span class="text-danger">*</span></label>
                         <select name="category_id" class="form-select" required>
                             <option value="">Select category</option>
                             <?php foreach ($categories as $cat): ?>
-                                <option value="<?php echo $cat['id']; ?>"><?php echo htmlspecialchars($cat['name']); ?></option>
+                                <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Course selection -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Course <span class="text-danger">*</span>
+                            <small class="text-muted">(Only students enrolled in this course will see this assessment)</small>
+                        </label>
+                        <select name="course" class="form-select" required>
+                            <option value="">Select course</option>
+                            <?php foreach ($courses as $c): ?>
+                                <option value="<?= $c ?>"><?= $c ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label">Assessment File</label>
+                        <label class="form-label">Assessment File <span class="text-danger">*</span></label>
                         <input type="file" name="file" class="form-control" accept=".pdf,.docx" required>
-                        <div class="form-text">Accepts PDF or DOCX files up to 1GB.</div>
+                        <div class="form-text">PDF or DOCX only. Max 100 MB.</div>
                     </div>
 
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn" style="background: #14B8A6; color: white;">
+                        <button type="submit" class="btn" style="background:#14B8A6;color:white;">
                             <i class="bi bi-upload me-1"></i>Upload Assessment
                         </button>
-                        <a href="teacher_dashboard.php" class="btn btn-outline-secondary">Cancel</a>
-                        <!-- Back Button -->
-
-                            <a href="<?php echo $_SESSION['role'] === 'student' ? 'student_dashboard.php' : 'teacher_dashboard.php'; ?>" class="btn btn-outline-secondary btn-sm">
-                                <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
-                            </a>
-
+                        <a href="teacher_dashboard.php" class="btn btn-outline-secondary">Back</a>
                     </div>
                 </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tips Card -->
-    <div class="col-lg-4">
-        <div class="card bg-light border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h2 class="h5 mb-3">Tips for Great Assessments</h2>
-                <ul class="list-unstyled small text-muted mb-0">
-                    <li class="mb-2"><i class="bi bi-check-circle" style="color: #14B8A6;" me-2></i>Use clear titles so students understand the topic</li>
-                    <li class="mb-2"><i class="bi bi-check-circle" style="color: #14B8A6;" me-2></i>Add instructions in the description if needed</li>
-                    <li class="mb-2"><i class="bi bi-check-circle" style="color: #14B8A6;" me-2></i>Prefer PDF format to keep formatting intact</li>
-                    <li><i class="bi bi-check-circle" style="color: #14B8A6;" me-2></i>Assign the correct category for easy discovery</li>
-                </ul>
             </div>
         </div>
     </div>

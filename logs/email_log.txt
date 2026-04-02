@@ -77,3 +77,41 @@
 {"time":"2026-03-10T11:19:03+05:30","to":"kavitarnag@gmail.com","subject":"Welcome to Notes Platform","body":"SUCCESS"}
 {"time":"2026-03-10T11:22:09+05:30","to":"kavitarnag@gmail.com","subject":"Password Reset Request","body":"SUCCESS"}
 {"time":"2026-03-11T10:42:31+05:30","to":"krishna.rai1810@gmail.com","subject":"Welcome to Notes Platform","body":"SUCCESS"}
+{"time":"2026-03-24T08:24:25+05:30","to":"aniket12151977@gmail.com","subject":"Welcome to Notes Platform","body":"ERROR: SMTP Error: Could not connect to SMTP host. Failed to connect to server"}
+{"time":"2026-03-24T08:26:23+05:30","to":"aniket12151977@gmail.com","subject":"Password Reset Request","body":"SUCCESS"}
+{"time":"2026-03-24T08:28:24+05:30","to":"aniket12151977@gmail.com","subject":"New Notes Uploaded \u2013 CGA","body":"SUCCESS"}
+{"time":"2026-03-24T08:28:28+05:30","to":"av2432004@gmail.com","subject":"New Notes Uploaded \u2013 CGA","body":"SUCCESS"}
+{"time":"2026-03-24T08:28:33+05:30","to":"kavitarnag@gmail.com","subject":"New Notes Uploaded \u2013 CGA","body":"SUCCESS"}
+{"time":"2026-03-24T08:28:37+05:30","to":"krishna.rai1810@gmail.com","subject":"New Notes Uploaded \u2013 CGA","body":"SUCCESS"}
+{"time":"2026-03-24T08:28:41+05:30","to":"notesshare@edu.in","subject":"New Notes Uploaded \u2013 CGA","body":"SUCCESS"}
+{"time":"2026-03-24T08:28:46+05:30","to":"rahulnag502@gmail.com","subject":"New Notes Uploaded \u2013 CGA","body":"SUCCESS"}
+{"time":"2026-03-24T08:28:51+05:30","to":"thefpvt@gmail.com","subject":"New Notes Uploaded \u2013 CGA","body":"SUCCESS"}
+{"time":"2026-03-24T08:28:55+05:30","to":"aniket12151977@gmail.com","subject":"Upload Confirmation","body":"SUCCESS"}
+{"time":"2026-03-29T09:51:12+05:30","to":"aniket12151977@gmail.com","subject":"Notes Approved","body":"SUCCESS"}
+{"time":"2026-03-30T15:41:12+05:30","to":"av2432004@gmail.com","subject":"Welcome to Notes Platform","body":"SUCCESS"}
+{"time":"2026-03-30T15:44:52+05:30","to":"akav0786@gmail.com","subject":"Welcome to Notes Platform","body":"SUCCESS"}
+{"time":"2026-03-30T15:54:23+05:30","to":"av2432004@gmail.com","subject":"Upload Confirmation","body":"SUCCESS"}
+{"time":"2026-03-30T15:54:28+05:30","to":"akav0786@gmail.com","subject":"New Assessment Uploaded","body":"SUCCESS"}
+{"time":"2026-03-30T15:56:42+05:30","to":"sv1072007@gmail.com","subject":"Welcome to Notes Platform","body":"SUCCESS"}
+{"time":"2026-03-31T07:09:24+05:30","to":"rahulnag502@gmail.com","subject":"Welcome to Notes Platform","body":"SUCCESS"}
+{"time":"2026-03-31T07:10:58+05:30","to":"rahulnag502@gmail.com","subject":"Upload Confirmation","body":"SUCCESS"}
+{"time":"2026-03-31T07:14:19+05:30","to":"akav0786@gmail.com","subject":"Assessment Result: Approved","body":"SUCCESS"}
+{"time":"2026-03-31T14:56:53+05:30","to":"akav0786@gmail.com","subject":"New Notes Uploaded \u2013 Information Security","body":"SUCCESS"}
+{"time":"2026-03-31T14:56:58+05:30","to":"av2432004@gmail.com","subject":"New Notes Uploaded \u2013 Information Security","body":"SUCCESS"}
+{"time":"2026-03-31T14:57:04+05:30","to":"notesshare@edu.in","subject":"New Notes Uploaded \u2013 Information Security","body":"SUCCESS"}
+{"time":"2026-03-31T14:57:08+05:30","to":"rahulnag502@gmail.com","subject":"New Notes Uploaded \u2013 Information Security","body":"SUCCESS"}
+{"time":"2026-03-31T14:57:13+05:30","to":"sv1072007@gmail.com","subject":"New Notes Uploaded \u2013 Information Security","body":"SUCCESS"}
+{"time":"2026-03-31T15:00:59+05:30","to":"av2432004@gmail.com","subject":"Upload Confirmation","body":"SUCCESS"}
+{"time":"2026-03-31T15:01:04+05:30","to":"akav0786@gmail.com","subject":"New Question Paper Uploaded","body":"SUCCESS"}
+{"time":"2026-03-31T15:01:08+05:30","to":"sv1072007@gmail.com","subject":"New Question Paper Uploaded","body":"SUCCESS"}
+{"time":"2026-03-31T15:01:13+05:30","to":"rahulnag502@gmail.com","subject":"New Question Paper Uploaded","body":"SUCCESS"}
+{"time":"2026-03-31T15:06:15+05:30","to":"av2432004@gmail.com","subject":"Notes Approved","body":"SUCCESS"}
+{"time":"2026-03-31T15:21:32+05:30","to":"akav0786@gmail.com","subject":"Note Approved","body":"SUCCESS"}
+{"time":"2026-03-31T15:23:30+05:30","to":"av2432004@gmail.com","subject":"Notes Deleted","body":"SUCCESS"}
+{"time":"2026-04-01T09:34:39+05:30","to":"akav0786@gmail.com","subject":"New Notes Uploaded \u2013 Android programming","body":"SUCCESS"}
+{"time":"2026-04-01T09:34:43+05:30","to":"av2432004@gmail.com","subject":"New Notes Uploaded \u2013 Android programming","body":"SUCCESS"}
+{"time":"2026-04-01T09:34:48+05:30","to":"notesshare@edu.in","subject":"New Notes Uploaded \u2013 Android programming","body":"SUCCESS"}
+{"time":"2026-04-01T09:34:52+05:30","to":"rahulnag502@gmail.com","subject":"New Notes Uploaded \u2013 Android programming","body":"SUCCESS"}
+{"time":"2026-04-01T09:34:56+05:30","to":"sv1072007@gmail.com","subject":"New Notes Uploaded \u2013 Android programming","body":"SUCCESS"}
+{"time":"2026-04-01T09:35:01+05:30","to":"av2432004@gmail.com","subject":"Upload Confirmation","body":"SUCCESS"}
+{"time":"2026-04-01T09:36:11+05:30","to":"av2432004@gmail.com","subject":"Note Approved","body":"SUCCESS"}

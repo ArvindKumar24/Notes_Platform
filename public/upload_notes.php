@@ -130,22 +130,22 @@ $cats = $pdo->query("SELECT * FROM categories")->fetchAll();
 
                     <form method="POST" enctype="multipart/form-data">
 
-                        <label class="form-label">Title</label>
-                        <input type="text" class="form-control mb-3" name="title">
+                        <label class="form-label">Title <span style="color: red;">*</span></label>
+                        <input type="text" class="form-control mb-3" name="title" required>
 
                         <label class="form-label">Description</label>
                         <textarea class="form-control mb-3" name="description" rows="3"></textarea>
 
-                        <label class="form-label">Category</label>
-                        <select class="form-select mb-3" name="category_id">
+                        <label class="form-label">Category <span style="color: red;">*</span></label>
+                        <select class="form-select mb-3" name="category_id" required>
                             <option value="">Select category</option>
                             <?php foreach ($cats as $cat): ?>
                                 <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
                             <?php endforeach; ?>
                         </select>
 
-                        <label class="form-label">Upload File</label>
-                        <input type="file" class="form-control mb-3" name="file" accept=".pdf,.docx">
+                        <label class="form-label">Upload File <span style="color: red;">*</span></label>
+                        <input type="file" class="form-control mb-3" name="file" accept=".pdf,.docx" required>
 
                      <button type="submit" name="upload" class="btn mb-3"
                         style="background: #14B8A6; color: white; width: 100%;">

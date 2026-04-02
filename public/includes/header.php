@@ -43,7 +43,11 @@ $prefix = ($is_admin || $is_upload) ? '../' : '';
 
                 <ul class="navbar-nav mb-2 mb-lg-0">
                     <?php if (!empty($_SESSION["user_id"])): ?>
-                        
+                        <li class="nav-item">
+                            <a class="btn btn-sm me-2" style="background: #14B8A6; color: white;" href="<?php echo $prefix; ?>dashboard.php">
+                                <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                            </a>
+                        </li>
                         
                         <li class="nav-item">
                             <a class="btn btn-outline-light btn-sm" style="background: #000b0a; color: white;" href="<?php echo $prefix; ?>logout.php">Logout</a>

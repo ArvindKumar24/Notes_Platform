@@ -1,13 +1,13 @@
 <?php
 require_once("../../config/config.php");
 
-// only allow admin
+
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../login.php");
     exit;
 }
 
-// get counts - updated to match actual database structure
+
 $totalUsers = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
 $totalNotes = $pdo->query("SELECT COUNT(*) FROM notes WHERE type='note'")->fetchColumn();
 $totalPapers = $pdo->query("SELECT COUNT(*) FROM notes WHERE type='question_paper'")->fetchColumn();
@@ -44,7 +44,7 @@ include("./header.php");
             margin: 0.5rem 0 0 0;
         }
 
-        /* Dashboard Stats Grid */
+       
         .dashboard-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -93,7 +93,7 @@ include("./header.php");
         .stat-card.danger { border-left-color: #F59E0B; }
         .stat-card.danger .stat-number { color: #F59E0B; }
 
-        /* Navigation Section */
+       
         .section-header {
             display: flex;
             align-items: center;
@@ -109,7 +109,7 @@ include("./header.php");
             font-weight: 600;
         }
 
-        /* Navigation Cards Grid */
+       
         .navigation-links {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -170,7 +170,7 @@ include("./header.php");
             line-height: 1.5;
         }
 
-        /* Recent Activity Section */
+       
         .activity-section {
             margin-top: 2.5rem;
             padding: 1.75rem;
@@ -267,7 +267,7 @@ include("./header.php");
             margin-left: 0.5rem;
         }
 
-        /* Responsive Design */
+       
         @media (max-width: 768px) {
             .admin-header {
                 flex-direction: column;
@@ -349,7 +349,7 @@ include("./header.php");
     <div class="activity-section">
         <h4>Recent Activity</h4>
         <?php
-        // Get recent uploads
+        
         $recentUploads = $pdo->query("
             SELECT n.title, n.type, n.uploaded_at, u.name as uploader, n.status 
             FROM notes n 
