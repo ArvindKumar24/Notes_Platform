@@ -5,11 +5,11 @@ define('APP_ENV', 'production');  // set to "development" for logging-only mode,
 
 define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_PORT', 587);
-define('SMTP_USERNAME', 'akav0786@gmail.com');
-define('SMTP_PASSWORD', 'dmjd nvbi jvvu nipy');  // Use Gmail App Password (16 characters)
+define('SMTP_USERNAME', '');
+define('SMTP_PASSWORD', '');  // Use Gmail App Password (16 characters)
 define('SMTP_SECURE', 'tls'); // tls or ssl
 
-define('SMTP_FROM_EMAIL', 'akav0786@gmail.com');
+define('SMTP_FROM_EMAIL', '');
 define('SMTP_FROM_NAME', 'Notes Platform');
 
 // Base URL for links (reset password etc.)
